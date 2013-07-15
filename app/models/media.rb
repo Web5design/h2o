@@ -37,6 +37,8 @@ class Media < ActiveRecord::Base
 
     time :created_at
     string :author
+    string :author_display, :stored => true
+    integer :author_id, :stored => true
 
     string :media_type do
       media_type.slug

@@ -25,9 +25,9 @@
     </h3>
     <p>
       <%= journal_article.created_at.to_s(:simpledatetime) %>
-      <% if journal_article.creators -%>
+      <% if journal_article.owners -%>
       by
-      <%= raw journal_article.creators.collect { |u| link_to(u.display, user_path(u)) }.join(',') %>
+      <%= raw journal_article.owners.collect { |u| link_to(u.display, user_path(u)) }.join(',') %>
       <% end -%>
     </p>
 	</div>

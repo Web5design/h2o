@@ -259,7 +259,7 @@ class PlaylistPusher
   end
 
 
-  def create_role_stack!(objects, role_names = ['owner', 'creator'])
+  def create_role_stack!(objects, role_names = ['owner'])
     user_ids = self.user_ids
     # object_ids = objects.map(&:id)
     # object_type = objects.first.class.to_s

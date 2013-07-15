@@ -128,7 +128,7 @@ class BaseController < ApplicationController
     set_sort_params
     set_sort_lists
     params[:page] ||= 1
-    params[:per_page] ||= 25
+    params[:per_page] ||= 20
 
     @results = Sunspot.new_search(models)
     @results.build do
@@ -147,7 +147,6 @@ class BaseController < ApplicationController
     models.each do |model|
       set_belongings model
     end
-
   end
 
   def search

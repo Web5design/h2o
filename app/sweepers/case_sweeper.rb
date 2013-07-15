@@ -14,7 +14,7 @@ class CaseSweeper < ActionController::Caching::Sweeper
       expire_fragment "case-#{record.id}-tags"
       expire_fragment "case-#{record.id}-detail"
 
-      users = (record.owners + record.creators).uniq
+      users = record.owners
       if record.changed.include?("public")
         users.each do |u|
           Rails.cache.delete("user-barcode-#{u.id}")

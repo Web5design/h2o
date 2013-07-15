@@ -20,9 +20,9 @@
     <% cache "media-#{media.id}-index" do %>
     <p>
       <%= media.created_at.to_s(:simpledatetime) %>
-      <% if media.creators -%>
+      <% if hit.stored(:author_id).present? -%>
       by
-      <%= raw media.creators.collect { |u| link_to(u.display, user_path(u)) }.join(',') %>
+      <%= link_to hit.stored(:author_display), "/users/#{hit.stored(:author_id)}" %>
       <% end -%>
     </p>
     <% end -%>

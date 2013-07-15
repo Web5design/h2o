@@ -45,6 +45,10 @@ class Playlist < ActiveRecord::Base
     text :name
     string :tag_list, :stored => true, :multiple => true
     string :author
+    string :author_display, :stored => true
+    integer :author_id, :stored => true
+    string :root_author_display, :stored => true
+    integer :root_author_id, :stored => true
     integer :karma
     string :users_by_permission, :stored => true, :multiple => true
 

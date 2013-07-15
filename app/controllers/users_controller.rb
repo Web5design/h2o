@@ -225,7 +225,6 @@ class UsersController < ApplicationController
       playlist = Playlist.new({ :name => "Your Bookmarks", :title => "Your Bookmarks", :public => false })
       playlist.save
       playlist.accepts_role!(:owner, current_user)
-      playlist.accepts_role!(:creator, current_user)
       current_user.update_attribute(:bookmark_id, playlist.id)
     else
       playlist = Playlist.find(current_user.bookmark_id)

@@ -18,15 +18,17 @@ class PlaylistSweeper < ActionController::Caching::Sweeper
       record.path_ids.each do |parent_id|
         Rails.cache.delete("playlist-wordcount-#{parent_id}")
         Rails.cache.delete("playlist-barcode-#{parent_id}")
+        Rails.cache.delete("playlist-barcode-html-#{parent_id}")
       end
       record.relation_ids.each do |p|
         Rails.cache.delete("playlist-wordcount-#{p}")
         Rails.cache.delete("playlist-barcode-#{p}")
+        Rails.cache.delete("playlist-barcode-html-#{p}")
         expire_page :controller => :playlists, :action => :show, :id => p
         expire_page :controller => :playlists, :action => :export, :id => p
       end
 
-      users = (record.owners + record.creators).uniq
+      users = record.owners
       if record.changed.include?("public")
         users.each do |u|
           #TODO: Move this into SweeperHelper, but right now doesn't call

@@ -1,10 +1,11 @@
 <section id="results" class="multiitems">
+<% benchmark 'Perf: Load search header info' do %>
   <aside class="sort">
 	  <%= render :partial => 'shared/sort', :locals => { :list => @sort_lists[@model.to_s.tableize.to_sym] } %>
   </aside>
   <div class="search_details">
 	  <aside class="pagination standard_pagination">
-		  <%= will_paginate @collection, :container => false, :previous_label => 'Previous', :next_label => 'Next' %>
+		  <%= will_paginate @collection.results, :container => false, :previous_label => 'Previous', :next_label => 'Next' %>
 	  </aside>
 		<h2>
 		<% if params[:tag] -%>
@@ -13,19 +14,26 @@
 		<% elsif params[:keywords] -%>
     Search Results: <b><%= params[:keywords] %></b>
 		<p>
-    (<%= pluralize @collection.total_entries, @model.to_s %> Total)
+    (<%= pluralize @collection.results.total_entries, @model.to_s %> Total)
 		</p>
 		<% else -%>
-		<%= @collection.total_entries %> <%= @model.to_s %> Total
+		<%= @collection.results.total_entries %> <%= @model.to_s %> Total
 		<% end -%>
 		</h2>
   </div>
+<% end -%>
+<% benchmark 'Perf: Load list' do %>
   <ul id="results_set">
-		<%= render :partial => "shared/objects/#{@model == Case ? 'case_obj' : @model.to_s.downcase}", :collection => @collection %>
+    <% @collection.each_hit_with_result do |hit, result| -%>
+		<%= render :partial => "shared/objects/#{@partial}", :locals => { @model_sym => result, :hit => hit } %>
+    <% end -%>
   </ul>
+<% end -%>
+<% benchmark 'Perf: Load 2nd pagination' do %>
   <div class="search_details bottom">
 	  <aside class="pagination standard_pagination">
-		  <%= will_paginate @collection, :container => false, :previous_label => 'Previous', :next_label => 'Next' %>
+		  <%= will_paginate @collection.results, :container => false, :previous_label => 'Previous', :next_label => 'Next' %>
 	  </aside>
   </div>
+<% end -%>
 </section>

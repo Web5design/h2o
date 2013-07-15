@@ -128,7 +128,6 @@ class PlaylistsController < BaseController
 
       # If save then assign role as owner to object
       @playlist.accepts_role!(:owner, current_user)
-      @playlist.accepts_role!(:creator, current_user)
 
       #IMPORTANT: This reindexes the item with author set
       @playlist.index!
@@ -204,15 +203,9 @@ class PlaylistsController < BaseController
 
     if @playlist_copy.save
       @playlist_copy.accepts_role!(:owner, current_user)
-      @playlist.creators && @playlist.creators.each do|c|
-        @playlist_copy.accepts_role!(:original_creator,c)
-      end
       @playlist_copy.playlist_items << @playlist.playlist_items.collect { |item| 
         new_item = item.clone
         new_item.resource_item = item.resource_item.clone
-        item.creators && item.creators.each do|c|
-          new_item.accepts_role!(:original_creator,c)
-        end
         new_item.save!
         new_item.accepts_role!(:owner, current_user)
         new_item.playlist_item_parent = item

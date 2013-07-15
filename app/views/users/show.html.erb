@@ -18,9 +18,9 @@
       </aside>
     </div>
     <ul id="results_set">
-      <% @bookshelf.results.each do |hit| -%>
-      <%= render :partial => "shared/objects/#{hit.class == Case ? 'case_obj' : hit.class.to_s.downcase}",
-                 :locals => { (hit.class == Case ? :case_obj : hit.class.to_s.downcase.to_sym) => hit } %>
+      <% @bookshelf.each_hit_with_result do |hit, result| -%>
+      <%= render :partial => "shared/objects/#{result.class == Case ? 'case_obj' : result.class.to_s.downcase}",
+                 :locals => { :hit => hit, (result.class == Case ? :case_obj : result.class.to_s.downcase.to_sym) => result } %>
       <% end -%>
     </ul>
   </div>
@@ -106,7 +106,7 @@
       <% item = bookmark.resource_item.actual_object %>
       <% if item.present? -%>
       <%= render :partial => "shared/objects/#{item.class == Case ? 'case_obj' : item.class.to_s.downcase}",
-                 :locals => { (item.class == Case ? :case_obj : item.class.to_s.downcase.to_sym) => item } %>
+                 :locals => { :hit => item, (item.class == Case ? :case_obj : item.class.to_s.downcase.to_sym) => item } %>
 			<% end -%>
 			<% end -%>
 		</ul>
@@ -126,7 +126,10 @@
       </aside>
 	  </div>
 		<ul id="results_<%= type.to_s %>">
-	    <%= render :partial => "shared/objects/#{v[:partial]}", :collection => v[:results] %>
+			<% v[:results].each do |item| -%>
+      <%= render :partial => "shared/objects/#{v[:partial]}",
+                 :locals => { :hit => item, v[:partial].to_sym => item } %>
+			<% end -%>
 		</ul>
 	</div>
 	<% end -%>

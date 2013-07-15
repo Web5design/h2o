@@ -13,9 +13,9 @@
     <% cache "default-#{default.id}-index" do %>
     <p>
       <%= default.created_at.to_s(:simpledatetime) %>
-      <% if default.creators -%>
+      <% if default.owners -%>
       added by
-      <%= raw default.creators.collect { |u| link_to(u.display, user_path(u)) }.join(',') %>
+      <%= raw default.owners.collect { |u| link_to(u.display, user_path(u)) }.join(',') %>
       <% end -%>
     </p>
     <% end -%>

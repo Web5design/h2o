@@ -130,7 +130,6 @@ class CollagesController < BaseController
     @collage = Collage.new(params[:collage])
     if @collage.save
       @collage.accepts_role!(:owner, current_user)
-      @collage.accepts_role!(:creator, current_user)
 
       render :json => { :type => 'collages', :id => @collage.id, :error => false }
     else

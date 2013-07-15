@@ -13,7 +13,7 @@ class TextBlockSweeper < ActionController::Caching::Sweeper
       expire_fragment "text_block-#{record.id}-tags"
       expire_fragment "text_block-#{record.id}-detail"
 
-      users = (record.owners + record.creators).uniq
+      users = record.owners
       if record.changed.include?("public")
         users.each do |u|
           #TODO: Move this into SweeperHelper, but right now doesn't call

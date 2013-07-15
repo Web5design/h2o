@@ -15,7 +15,7 @@ class MediaSweeper < ActionController::Caching::Sweeper
       expire_fragment "media-#{record.id}-tags"
       expire_fragment "media-#{record.id}-annotatable-content"
 
-      users = (record.owners + record.creators).uniq
+      users = record.owners
       if record.changed.include?("public")
         users.each do |u|
           #TODO: Move this into SweeperHelper, but right now doesn't call

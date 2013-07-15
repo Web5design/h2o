@@ -12,9 +12,9 @@
     </h3>
     <p>
       <%= textblock.created_at.to_s(:simpledatetime) %>
-      <% if textblock.creators -%>
+      <% if hit.stored(:author_id).present? -%>
       by
-      <%= raw textblock.creators.collect { |u| link_to(u.display, user_path(u)) }.join(',') %>
+      <%= link_to hit.stored(:author_display), "/users/#{hit.stored(:author_id)}" %>
       <% end -%>
       <% cache "text_block-#{textblock.id}-tags" do %>
       <% if textblock.tag_list.any? -%>
