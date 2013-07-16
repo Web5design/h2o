@@ -11,11 +11,7 @@ class CollageSweeper < ActionController::Caching::Sweeper
       Rails.cache.delete_matched(%r{collages-search*})
       Rails.cache.delete_matched(%r{collages-embedded-search*})
   
-      expire_fragment "collage-all-tags"
-      expire_fragment "collage-#{record.id}-index"
-      expire_fragment "collage-#{record.id}-tags"
-      expire_fragment "collage-#{record.id}-annotatable-content"
-      expire_fragment "case-#{record.annotatable_id}-index"
+      expire_fragment "collage-list-object-#{record.id}"
   
       #expire fragments of my ancestors, descendants, and siblings meta
       relations = [record.path_ids, record.descendant_ids]

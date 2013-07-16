@@ -8,9 +8,7 @@ class PlaylistSweeper < ActionController::Caching::Sweeper
       Rails.cache.delete_matched(%r{playlists-search*})
       Rails.cache.delete_matched(%r{playlists-embedded-search*})
   
-      expire_fragment "playlist-all-tags"
-      expire_fragment "playlist-#{record.id}-index"
-      expire_fragment "playlist-#{record.id}-tags"
+      expire_fragment "playlist-list-object-#{record.id}"
       expire_page :controller => :playlists, :action => :show, :id => record.id
       expire_page :controller => :playlists, :action => :export, :id => record.id
       Rails.cache.delete("playlist-wordcount-#{record.id}")

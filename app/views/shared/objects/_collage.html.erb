@@ -1,16 +1,10 @@
-<% if hit.present? -%>
+<% cache "collage-list-object-#{hit.stored(:id)}" do %>
 <li class="listitem listitem<%= collage.id %>" id="listitem_collage<%= collage.id %>" data-itemid="<%= collage.id %>">
   <a href="#" class="tooltip list-icon icon icon-collage" title="Collage"></a>
   <div class="details">
-<% benchmark "Perf: left A" do -%>
     <h3>
       <%= link_to collage.name, collage_path(collage), :class => "title" %>
-      <% if current_user && (@is_admin[:collage] || @my_belongings[:collages].include?(collage)) %>
-      <%= link_to 'DELETE', collage, :class => "icon icon-delete tooltip", :title => "Delete", "data-type" => "collage", "data-id" => collage.id %>
-      <% end %>
     </h3>
-<% end -%>
-<% benchmark "Perf: left B" do -%>
     <p>
       <% if hit.stored(:author_id).present? -%>
       <% if hit.stored(:root_author_id).present? && hit.stored(:root_author_id) != hit.stored(:author_id) -%>
@@ -26,15 +20,12 @@
       <%= collage.updated_at.strftime("%B %d, %Y") %>
       <% if false -%>Taught at [school] (if it hasn't been taught anywhere, don't display this field) <% end -%>
     </p>
-<% end -%>
   </div>
 
-<% benchmark "Perf: right" do -%>
   <div class="right_details">
   <div class="barcode_outer">
-    <%#= render :partial => "shared/barcode", :locals => { :object => collage } %>
+    <%= render :partial => "shared/barcode", :locals => { :object => collage } %>
   </div>
-  <% if current_user %>
   <div class="controls">
     <%= link_to raw('<span class="icon icon-read"></span>READ'), collage, :class => "action read-action" %>
     <a href="<%= prepare_copy_collage_path(collage) %>" class="remix-action link-copy"><span class="icon icon-remix"></span>REMIX</a>
@@ -44,9 +35,7 @@
       "data-itemid" => collage.id,
       "data-type" => "collage" %>
   </div>
-  <% end %>
   </div>
-<% end -%>
 
   <div class="clear"></div>
 </li>

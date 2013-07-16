@@ -1,10 +1,4 @@
-<% if false -%>
-<a href="#" class="fixed_link" id="activities_toggle"><span class="icon icon-activities"></span></a>
-<a href="#" class="fixed_link" id="bookshelf_toggle"><span class="icon icon-bookshelf"></span></a>
-<a href="#" class="fixed_link" id="profile_toggle"><span class="icon icon-profile"></span></a>
-<a href="#" class="fixed_link" id="settings_toggle"><span class="icon icon-settings"></span></a>
-<% end -%>
-
+<% benchmark 'Perf render view' do %>
 <div id="results">
   <div id="bookshelf_panel" class="panel">
     <div class="header">
@@ -17,13 +11,16 @@
         <%= will_paginate @bookshelf.hits, :container => false, :previous_label => 'Previous', :next_label => 'Next' %>
       </aside>
     </div>
+<% benchmark 'Perf main results' do %>
     <ul id="results_set">
       <% @bookshelf.each_hit_with_result do |hit, result| -%>
       <%= render :partial => "shared/objects/#{result.class == Case ? 'case_obj' : result.class.to_s.downcase}",
                  :locals => { :hit => hit, (result.class == Case ? :case_obj : result.class.to_s.downcase.to_sym) => result } %>
       <% end -%>
     </ul>
+<% end -%>
   </div>
+<% benchmark 'Perf perf panel' do %>
   <div id="profile_panel" class="panel">
     <div class="header">
       <h3>Profile</h3>
@@ -34,6 +31,7 @@
     </div>
     <%= render :partial => "shared/author_stats", :locals => { :user => @user } %>
   </div>
+<% end -%>
   <% if @user == current_user -%>
   <div id="settings_panel" class="panel">
     <div class="header">
@@ -135,3 +133,5 @@
 	<% end -%>
 	<% end -%>
 </div>
+
+<% end -%>

@@ -97,6 +97,8 @@ class UsersController < ApplicationController
         render :partial => 'base/search_ajax'
       end
     else
+
+ User.benchmark "Perf run search" do
       bookmarks_id = @user.bookmark_id
       @bookshelf = Sunspot.new_search(Playlist, Collage, Case, Media, TextBlock, Default)
       @bookshelf.build do
@@ -115,6 +117,8 @@ class UsersController < ApplicationController
       end
       @bookshelf.execute!
 
+end
+ User.benchmark "Perf peripheral user" do
       set_sort_lists
       if params["controller"] == "users" && params["action"] == "show"
         @sort_lists.each do |k, v|
@@ -174,6 +178,7 @@ class UsersController < ApplicationController
 	      end
 	      v[:results] = p.paginate(:page => params[:page], :per_page => 10)
 	    end
+ end
       render 'show'
     end
   end

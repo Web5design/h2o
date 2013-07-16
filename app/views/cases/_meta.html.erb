@@ -11,7 +11,6 @@
   <% end -%>
 </p>
 <% end -%>
-<% cache "case-#{@case.id}-detail" do -%>
 <p>
   <label>Decision date:</label>
   <%= @case.decision_date %>
@@ -40,4 +39,3 @@
   <%= @case.case_jurisdiction.display_name %>
 </p> 
 <% end %>
-<% end -%>

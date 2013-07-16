@@ -1,13 +1,17 @@
 <section id="results" class="multiitems">
-<% benchmark 'Perf: Load search header info' do %>
+<% benchmark 'Perf: Load search sort' do %>
   <aside class="sort">
 	  <%= render :partial => 'shared/sort', :locals => { :list => @sort_lists[@model.to_s.tableize.to_sym] } %>
   </aside>
+<% end -%>
   <div class="search_details">
+<% benchmark 'Perf: Load search pagination' do %>
 	  <aside class="pagination standard_pagination">
 		  <%= will_paginate @collection.results, :container => false, :previous_label => 'Previous', :next_label => 'Next' %>
 	  </aside>
 		<h2>
+<% end -%>
+<% benchmark 'Perf: Load search details' do %>
 		<% if params[:tag] -%>
 		<%= @model.to_s %> tagged: <%= CGI.unescape(params[:tag]) %> (<%= pluralize @collection.total_entries, @model.to_s %> Total)
 		<%= link_to "CLEAR TAG", self.send("#{@model.to_s.tableize}_path") %>
@@ -20,8 +24,8 @@
 		<%= @collection.results.total_entries %> <%= @model.to_s %> Total
 		<% end -%>
 		</h2>
-  </div>
 <% end -%>
+  </div>
 <% benchmark 'Perf: Load list' do %>
   <ul id="results_set">
     <% @collection.each_hit_with_result do |hit, result| -%>

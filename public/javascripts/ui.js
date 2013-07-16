@@ -30,6 +30,12 @@ jQuery.extend({
       return Mustache.to_html(template, data, partial, stream);
     }
   },
+  setListLinkVisibility: function() {
+    if(jQuery.cookie('user_id') == null) {
+      jQuery('.controls').remove();
+    }
+    // TODO: Lookup owned playlists & remove Push link if not owned
+  },
   adjustArticleHeaderSizes: function() {
     jQuery('article h1').addClass('scale1-4');
     jQuery('article h2').addClass('scale1-3');
@@ -1192,6 +1198,9 @@ jQuery(function() {
   jQuery.updateExistingBookmarks();
   if(editability_path != '') {
     jQuery.loadEditability();
+  }
+  if(jQuery('body').hasClass('action_index')) {
+    jQuery.setListLinkVisibility();
   }
 
   if(jQuery.classType() != 'collages' && jQuery.classType() != 'playlists') {
