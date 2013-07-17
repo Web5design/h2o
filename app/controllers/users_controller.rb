@@ -260,7 +260,6 @@ end
         playlist_item = PlaylistItem.new(:playlist_id => playlist.id,
           :resource_item_type => item_klass.to_s,
           :resource_item_id => item.id)
-        playlist_item.accepts_role!(:owner, current_user)
         playlist_item.save
 
         render :json => { :already_bookmarked => false, :user_id => current_user.id }

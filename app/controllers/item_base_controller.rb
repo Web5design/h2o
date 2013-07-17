@@ -18,7 +18,8 @@ class ItemBaseController < BaseController
   def allow_update?
     load_object_and_playlist
 
-    current_user.can_permission_playlist("edit_notes", @playlist) || 
+    current_user.has_role?(:owner, @playlist) ||
+      current_user.can_permission_playlist("edit_notes", @playlist) || 
       current_user.can_permission_playlist("edit_descriptions", @playlist)
   end
 
@@ -30,6 +31,8 @@ class ItemBaseController < BaseController
   end
 
   def new
+    # TODO: Add restriction here to prohibit non-owners, non-admins
+
     @can_edit_all = @can_edit_desc = true
     @can_edit_notes = false
 
@@ -51,6 +54,8 @@ class ItemBaseController < BaseController
   end
 
   def create
+    # TODO: Add restriction here to prohibit non-owners, non-admins
+
     @object.update_attributes(params[@param_symbol])
 
     @base_object = nil
@@ -78,8 +83,6 @@ class ItemBaseController < BaseController
     end
 
     if @object.save
-      @object.accepts_role!(:owner, current_user)
-
       playlist_item = PlaylistItem.new(:playlist => @playlist)
       playlist_item.resource_item = @object
 
@@ -94,7 +97,6 @@ class ItemBaseController < BaseController
             pi.update_attribute(:position, pi.position + 1)
           end
         end
-        playlist_item.accepts_role!(:owner, current_user)
       end
 
 	    render :json => { :type => 'playlists', :playlist_item_id => playlist_item.id, :id => @playlist.id, :error => false, :position_data => position_data }
