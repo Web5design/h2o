@@ -72,7 +72,7 @@ class BaseController < ApplicationController
         :logged_in => current_user.to_json(:only => [:id, :login]),
         :playlists => current_user.playlists.to_json(:only => [:id, :name]),
         :bookmarks => current_user.bookmarks_map.to_json,
-        :anonymous => current_user.has_role?(:nonauthenticated)
+        :display_name => current_user.simple_display
       }
     else
       render :json => {

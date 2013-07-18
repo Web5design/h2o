@@ -177,7 +177,7 @@ class User < ActiveRecord::Base
   def bookmarks
     if self.bookmark_id
       Rails.cache.fetch("user-bookmarks-#{self.id}") do
-        Playlist.find(self.bookmark_id).playlist_items
+        Playlist.find(self.bookmark_id, :include => :playlist_items).playlist_items
       end
     else
       []
@@ -185,11 +185,13 @@ class User < ActiveRecord::Base
   end
 
   def bookmarks_map
-    map = {}
-    self.bookmarks.each do |i|
-      map["listitem_#{i.resource_item_type.tableize.singularize.gsub('item_', '')}#{i.resource_item.actual_object_id}"] = 1 if (i.resource_item && i.resource_item.actual_object)
+    Rails.cache.fetch("user-bookmarks-map-#{self.id}") do
+      map = {}
+      self.bookmarks.each do |i|
+        map["listitem_#{i.resource_item_type.tableize.singularize.gsub('item_', '')}#{i.resource_item.actual_object_id}"] = 1 if (i.resource_item && i.resource_item.actual_object)
+      end
+      map
     end
-    map
   end
 
   def get_current_assignments(rotisserie_discussion = nil)

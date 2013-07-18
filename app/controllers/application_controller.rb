@@ -251,10 +251,11 @@ end
       cookies[:show_annotations] = (user.default_show_annotations? ? 'true' : 'false') 
       cookies[:display_name] = user.simple_display
       cookies[:user_id] = user.id
+      cookies[:anonymous_user] = false
     end
   end
   def destroy_user_preferences(user)
-    [:font_size, :use_new_tab, :show_annotations, :display_name, :user_id].each do |attr|
+    [:font_size, :use_new_tab, :show_annotations, :display_name, :user_id, :anonymous_user].each do |attr|
       cookies.delete(attr)
     end
   end

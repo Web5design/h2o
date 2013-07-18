@@ -33,18 +33,20 @@ class UsersController < ApplicationController
 
   def create_anon
     password = ActiveSupport::SecureRandom.random_bytes(10)
-    @user = User.new(:login => "anon_#{ActiveSupport::SecureRandom.hex(13)}",
+    user = User.new(:login => "anon_#{ActiveSupport::SecureRandom.hex(13)}",
       :password => password,
       :password_confirmation => password)
-    @user.has_role! :nonauthenticated
-    @user.save do |result|
+    user.has_role! :nonauthenticated
+    user.save do |result|
       if result
+        apply_user_preferences(user)
+        cookies[:anonymous_user] = true
         if request.xhr?
           #text doesn't matter, it's the return code that does
           render :text => (session[:return_to] || '/')
         else
           flash[:notice] = "Account registered!"
-          redirect_back_or_default user_path(@user)
+          redirect_back_or_default user_path(user)
         end
       else
         render :action => :create_anon, :status => :unprocessable_entity

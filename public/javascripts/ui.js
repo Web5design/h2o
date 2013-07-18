@@ -610,13 +610,13 @@ jQuery.extend({
         access_results = results;
         if(results.logged_in) {
           var data = jQuery.parseJSON(results.logged_in);
-          if(results.anonymous) {
+          if(eval(jQuery.cookie('anonymous_user'))) {
             data.user.login = 'ANONYMOUS';
             jQuery('.requires_non_anonymous').remove(); 
           } else {
             jQuery('.requires_non_anonymous').animate({ opacity: 1.0 });
           }
-          jQuery('#user_account').append(jQuery('<a>').html(data.user.login + ' Dashboard').attr('href', "/users/" + data.user.id));
+          jQuery('#user_account').append(jQuery('<a>').html(results.display_name + ' Dashboard').attr('href', "/users/" + data.user.id));
           jQuery('#defect_user_id').val(data.user.id);
           jQuery('.requires_logged_in').animate({ opacity: 1.0 });
           jQuery('#header_login').remove();
