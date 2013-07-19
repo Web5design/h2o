@@ -80,15 +80,19 @@ class PlaylistsController < BaseController
 
   # GET /playlists/1
   def show
+
+  Rails.logger.warn "stephie here 1"
     @page_cache = true if @playlist.public?
     @editability_path = access_level_playlist_path(@playlist)
     add_javascripts ['playlists', 'jquery.tipsy', 'jquery.nestable']
     add_stylesheets ['playlists']
+  Rails.logger.warn "stephie here 2"
 
     @owner = @playlist.owners.first
-    @author_playlists = @playlist.owners.first.playlists.paginate(:page => 1, :per_page => 5)
+    @author_playlists = @owner.playlists.paginate(:page => 1, :per_page => 5)
     @can_edit = current_user && (@playlist.admin? || @playlist.owner?)
     @parents = Playlist.find(:all, :conditions => { :id => @playlist.relation_ids })
+  Rails.logger.warn "stephie here 3"
   end
 
   def check_export
@@ -196,25 +200,20 @@ class PlaylistsController < BaseController
     @playlist = Playlist.find(params[:id])  
     @playlist_copy = Playlist.new(params[:playlist])
     @playlist_copy.parent = @playlist
-
-    if @playlist_copy.title.blank?
-      @playlist_copy.title = params[:playlist][:name] 
-    end
+    @playlist_copy.karma = 0
+    @playlist_copy.title = params[:playlist][:name] 
 
     if @playlist_copy.save
+      # Note: Building empty playlist barcode to reduce cache lookup, optimize
+      Rails.cache.fetch("playlist-barcode-#{@playlist_copy.id}") { [] }
+
       @playlist_copy.accepts_role!(:owner, current_user)
       @playlist_copy.playlist_items << @playlist.playlist_items.collect { |item| 
         new_item = item.clone
         new_item.resource_item = item.resource_item.clone
         new_item.save!
-        new_item.accepts_role!(:owner, current_user)
-        new_item.playlist_item_parent = item
         new_item
       }
-
-      # NOTE: Commenting this out because it's broken
-      # Not sure if Influence is even used in app post redesign
-      # create_influence(@playlist, @playlist_copy)
 
       flash[:notice] = "Your copy is below. Cheers!"
 

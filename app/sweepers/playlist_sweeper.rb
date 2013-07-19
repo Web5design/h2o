@@ -3,10 +3,11 @@ class PlaylistSweeper < ActionController::Caching::Sweeper
   include SweeperHelper
   observe Playlist
 
-  def playlist_clear(record)
+  def playlist_clear(record, creation)
     begin
-      Rails.cache.delete_matched(%r{playlists-search*})
       Rails.cache.delete_matched(%r{playlists-embedded-search*})
+
+      return if creation || record.changed.empty?
   
       expire_fragment "playlist-list-object-#{record.id}"
       expire_page :controller => :playlists, :action => :show, :id => record.id
@@ -54,19 +55,25 @@ class PlaylistSweeper < ActionController::Caching::Sweeper
     end
   end
 
-  def after_save(record)
-    playlist_clear(record)
+  def after_create(record)
+    playlist_clear(record, true)
+  end
+
+  def after_update(record)
+    playlist_clear(record, false)
   end
 
   def before_destroy(record)
-    playlist_clear(record)
+    playlist_clear(record, false)
   end
 
   def after_playlists_position_update
+  Rails.logger.warn "stephie after pos update"
     playlist_clear_nonsiblings(params[:id])
   end
 
   def after_playlists_notes
+  Rails.logger.warn "stephie playlist notes"
     playlist_clear_nonsiblings(params[:id])
   end
 end

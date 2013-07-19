@@ -2,7 +2,7 @@ require 'redcloth_extensions'
 require 'ancestry_extensions'
 
 class PlaylistItem < ActiveRecord::Base
-  # extend RedclothExtensions::ClassMethods
+  extend RedclothExtensions::ClassMethods
 
   # TODO: Investigate acts_as_list conditional, to skip on bookmarked items, or investigate if needed
   acts_as_list :scope => :playlist

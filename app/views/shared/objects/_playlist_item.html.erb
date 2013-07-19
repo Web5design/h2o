@@ -1,3 +1,4 @@
+<% Rails.logger.warn "stephie  here AAAA" %>
 <li class="<%= "dd-item" if recursive_level == 0 %> playlist listitem level<%= recursive_level %> listitem<%= resource_item.id %> <%= 'last' if last %>" id="playlist_item_<%= item.id %>" data-id="<%= item.id %>" data-itemid="<%= resource_item.id %>">
   <div class="wrapper">
   <div class="inner-wrapper <%= "dd-handle" if recursive_level == 0 %>">
