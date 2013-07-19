@@ -101,7 +101,6 @@ class Collage < ActiveRecord::Base
       #copy tags
       new_annotation.layer_list = annotation.layer_list
       new_annotation.accepts_role!(:owner, new_user)
-      new_annotation.parent = annotation
       new_annotation.save
     end
     self.color_mappings.each do |color_mapping|

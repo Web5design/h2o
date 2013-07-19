@@ -1013,9 +1013,19 @@ jQuery.extend({
       });
     });
   },
+  observeRemixControls: function(region) {
+    jQuery('.remix-action').live('click', function(e) {
+      e.preventDefault();
+      var link = jQuery(this);
+      var node_title = link.data('type').charAt(0).toUpperCase() + link.data('type').slice(1);
+      var data = { "copy_url" : link.attr('href'), "node_title" : node_title, "type" : link.data('type'), "title" : link.data('title') }; 
+      var html = jQuery.mustache(remix_item_template, data);
+      jQuery.generateGenericNode(html);
+    });
+  },
   /* Generic HTML form elements */
   observeGenericControls: function(region){
-    jQuery(region + ' .remix-action,' + region + ' .edit-action,' + region + ' .new-action,' + region + '.push-action').live('click', function(e){
+    jQuery(region + ' .edit-action,' + region + ' .new-action,' + region + '.push-action').live('click', function(e){
       var actionUrl = jQuery(this).attr('href');
       e.preventDefault();
       jQuery.ajax({
@@ -1178,6 +1188,7 @@ jQuery(function() {
   jQuery.initializeBarcodes();
   jQuery.observeDestroyControls('');
   jQuery.observeGenericControls('');
+  jQuery.observeRemixControls('');
   jQuery.observeBookmarkControls();
   jQuery.observePagination(); 
   jQuery.observeSort();
@@ -1264,3 +1275,27 @@ var delete_item_template = '\
 <a href="#" id="generic_item_cancel" class="button">NO</a>\
 </div>\
 ';
+
+var remix_item_template = '\
+<h3 id="generic_title">Remix {{node_title}}</h3>\
+<div id="error_block"></div>\
+<form action="{{copy_url}}" class="{{type}}_form formtastic formtastic {{type}}" method="post">\
+<fieldset class="inputs">\
+<ol>\
+<li class="string required" id="{{type}}_name_input">\
+<label for="{{type}}_name">Name<abbr title="required">*</abbr></label>\
+<input class="ui-widget-content ui-corner-all" id="{{type}}_name" maxlength="250" name="{{type}}[name]" size="50" type="text" value="{{title}}">\
+</li>\
+<li class="boolean required" id="{{type}}_public_input">\
+<label for="{{type}}_public">\
+<input name="{{type}}[public]" type="hidden" value="0"><input class="privacy_toggle" id="{{type}}_public" name="collage[public]" checked="checked" type="checkbox" value="1">Public<abbr title="required">*</abbr></label>\
+</li>\
+<li class="text optional" id="{{type}}_description_input">\
+<label for="{{type}}_description">Description</label>\
+<textarea class="ui-widget-content ui-corner-all" cols="40" id="{{type}}_description" name="{{type}}[description]" rows="5"></textarea>\
+</li>\
+</ol></fieldset>\
+</form>\
+';
+
+

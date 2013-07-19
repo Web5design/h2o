@@ -16,7 +16,7 @@ class PlaylistsController < BaseController
 
   access_control do
     allow all, :to => [:embedded_pager, :show, :index, :export, :access_level, :check_export, :position_update]
-    allow logged_in, :to => [:new, :create, :copy, :prepare_copy]
+    allow logged_in, :to => [:new, :create, :copy]
 
     allow logged_in, :to => [:notes], :if => :allow_notes?
     allow logged_in, :to => [:edit, :update], :if => :allow_edit?
@@ -81,18 +81,15 @@ class PlaylistsController < BaseController
   # GET /playlists/1
   def show
 
-  Rails.logger.warn "stephie here 1"
     @page_cache = true if @playlist.public?
     @editability_path = access_level_playlist_path(@playlist)
     add_javascripts ['playlists', 'jquery.tipsy', 'jquery.nestable']
     add_stylesheets ['playlists']
-  Rails.logger.warn "stephie here 2"
 
     @owner = @playlist.owners.first
     @author_playlists = @owner.playlists.paginate(:page => 1, :per_page => 5)
     @can_edit = current_user && (@playlist.admin? || @playlist.owner?)
     @parents = Playlist.find(:all, :conditions => { :id => @playlist.relation_ids })
-  Rails.logger.warn "stephie here 3"
   end
 
   def check_export
@@ -194,16 +191,12 @@ class PlaylistsController < BaseController
     end
   end
   
-  def prepare_copy
-    @playlist = Playlist.find(params[:id])
-  end
-
   def copy
-    @playlist = Playlist.find(params[:id])  
+    @playlist = Playlist.find(params[:id], :include => :playlist_items)  
     @playlist_copy = Playlist.new(params[:playlist])
     @playlist_copy.parent = @playlist
     @playlist_copy.karma = 0
-    @playlist_copy.title = params[:playlist][:name] 
+    @playlist_copy.title = params[:playlist][:name]
 
     if @playlist_copy.save
       # Note: Building empty playlist barcode to reduce cache lookup, optimize
@@ -216,8 +209,6 @@ class PlaylistsController < BaseController
         new_item.save!
         new_item
       }
-
-      flash[:notice] = "Your copy is below. Cheers!"
 
       render :json => { :type => 'playlists', :id => @playlist_copy.id } 
     else

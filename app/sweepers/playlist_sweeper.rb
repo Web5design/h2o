@@ -7,6 +7,9 @@ class PlaylistSweeper < ActionController::Caching::Sweeper
     begin
       Rails.cache.delete_matched(%r{playlists-embedded-search*})
 
+      users = record.owners
+      users.each { |u| Rails.cache.delete("user-playlists-#{u.id}") }
+
       return if creation || record.changed.empty?
   
       expire_fragment "playlist-list-object-#{record.id}"
@@ -27,7 +30,6 @@ class PlaylistSweeper < ActionController::Caching::Sweeper
         expire_page :controller => :playlists, :action => :export, :id => p
       end
 
-      users = record.owners
       if record.changed.include?("public")
         users.each do |u|
           #TODO: Move this into SweeperHelper, but right now doesn't call
@@ -37,7 +39,6 @@ class PlaylistSweeper < ActionController::Caching::Sweeper
           Rails.cache.delete("user-barcode-#{u.id}")
         end
       end
-      users.each { |u| Rails.cache.delete("user-playlists-#{u.id}") }
     rescue Exception => e
       Rails.logger.warn "Playlist sweeper error: #{e.inspect}"
     end
@@ -68,12 +69,10 @@ class PlaylistSweeper < ActionController::Caching::Sweeper
   end
 
   def after_playlists_position_update
-  Rails.logger.warn "stephie after pos update"
     playlist_clear_nonsiblings(params[:id])
   end
 
   def after_playlists_notes
-  Rails.logger.warn "stephie playlist notes"
     playlist_clear_nonsiblings(params[:id])
   end
 end
