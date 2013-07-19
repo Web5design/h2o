@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130624233739) do
+ActiveRecord::Schema.define(:version => 20130708151957) do
 
   create_table "annotation_versions", :force => true do |t|
     t.integer  "annotation_id"
@@ -706,6 +706,12 @@ ActiveRecord::Schema.define(:version => 20130624233739) do
     t.datetime "updated_at"
   end
 
+  create_table "locations", :force => true do |t|
+    t.string   "name",       :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "media_types", :force => true do |t|
     t.string   "label"
     t.string   "slug"
@@ -860,6 +866,8 @@ ActiveRecord::Schema.define(:version => 20130624233739) do
     t.integer  "counter_start",                  :default => 1,    :null => false
     t.integer  "karma"
     t.integer  "pushed_from_id"
+    t.integer  "location_id"
+    t.string   "when_taught"
   end
 
   add_index "playlists", ["active"], :name => "index_playlists_on_active"

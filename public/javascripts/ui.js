@@ -875,6 +875,7 @@ jQuery.extend({
       e.preventDefault();
       var destroyUrl = jQuery(this).attr('href');
       var listing = jQuery(this).parent().parent();
+      var type = jQuery(this).data('type');
       jQuery.ajax({
         cache: false,
         type: 'POST',
@@ -888,33 +889,41 @@ jQuery.extend({
           jQuery.hideGlobalSpinnerNode();
         },
         success: function(data){
-          listing.slideUp(200, function(e) {
-            listing.remove();
-          });
-          jQuery.hideGlobalSpinnerNode();
+          if(jQuery('.singleitem').length) {
+            document.location.href = "/" + type + "s";
+          } else {
+            listing.slideUp(200, function(e) {
+              listing.remove();
+            });
+            jQuery.hideGlobalSpinnerNode();
+          }
         }
       });
     });
-    jQuery(region + ' .icon-delete').live('click', function(e){
-    // hide any existing forms
+    jQuery(region + ' .icon-delete,' + region + '.delete-action').live('click', function(e){
+      // hide any existing forms
       e.preventDefault();
+	    var type = jQuery(this).data('type');
       var destroyUrl = jQuery(this).attr('href');
       var item_id = jQuery(this).data('id');
-      var type = jQuery(this).data('type');
-      var listing = jQuery('#listitem_' + type + item_id);
+      var listing;
 
-      if(listing.find('#generic_item_form').size()) {
-        return;
-      }
-      jQuery('#generic_item_form').slideUp(200, function() {
-        jQuery(this).remove();
-      });
+      if(jQuery('.singleitem').length && jQuery('.singleitem #description').has(jQuery(this)).length > 0) {
+        listing = jQuery('#description');
+      } else {
+        listing = jQuery('#listitem_' + type + item_id);
+	      if(listing.find('#generic_item_form').size()) {
+	        return;
+	      }
+	      jQuery('#generic_item_form').slideUp(200, function() {
+	        jQuery(this).remove();
+	      });
+      }	
 
-      var data = { "url" : destroyUrl };
-      var content = jQuery(jQuery.mustache(delete_item_template, data)).css('display', 'none');
-      content.appendTo(listing);
-      content.slideDown(200);
-
+	    var data = { "url" : destroyUrl, "type" : type };
+	    var content = jQuery(jQuery.mustache(delete_item_template, data)).css('display', 'none');
+	    content.appendTo(listing);
+	    content.slideDown(200);
     });
   },
 
@@ -1251,7 +1260,7 @@ var add_popup_template = '\
 var delete_item_template = '\
 <div id="generic_item_form" class="delete">\
 <p>Are you sure you want to delete this item?</p>\
-<a href="{{url}}" id="generic_item_delete" class="button">YES</a>\
+<a href="{{url}}" data-type="{{type}}" id="generic_item_delete" class="button">YES</a>\
 <a href="#" id="generic_item_cancel" class="button">NO</a>\
 </div>\
 ';

@@ -155,12 +155,14 @@ class PlaylistsController < BaseController
     if !can_edit_all
       params["playlist"].delete("name")  
       params["playlist"].delete("tag_list")  
+      params["playlist"].delete("when_taught")
+      params["playlist"].delete("location_id")
     end
 
     if @playlist.update_attributes(params[:playlist])
       render :json => { :type => 'playlists', :id => @playlist.id }
     else
-      render :json => { :type => 'playlists', :id => @playlist.id }
+      render :json => { :type => 'playlists', :id => @playlist.id, :error => true, :message => "#{@playlist.errors.full_messages.join(', ')}" }
     end
   end
 
@@ -270,7 +272,10 @@ class PlaylistsController < BaseController
     value = params[:type] == 'public' ? true : false
     @playlist.playlist_items.each { |pi| pi.update_attribute(:public_notes, value) } 
 
-    render :json => {} 
+    render :json => {  :total_count => @playlist.playlist_items.count,
+                       :public_count => @playlist.public_count,
+                       :private_count => @playlist.private_count
+                     }
   end
 
   def playlist_lookup

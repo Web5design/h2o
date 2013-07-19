@@ -30,12 +30,44 @@ class Playlist < ActiveRecord::Base
   has_many :playlist_items, :order => "playlist_items.position", :dependent => :destroy
   has_many :roles, :as => :authorizable, :dependent => :destroy
   has_and_belongs_to_many :user_collections #, :dependent => :destroy
+  belongs_to :location
 
   validates_presence_of :name
   validates_length_of :name, :in => 1..250
 
   before_destroy :collapse_children
   named_scope :public, :conditions => {:public => true, :active => true}
+
+  validate :when_taught_validation
+
+  def when_taught_validation
+    self.when_taught = self.when_taught.to_s.downcase.gsub(/ /, '')
+
+    # return if empty
+    return if self.when_taught == ""
+
+    # return if "other"
+    return if self.when_taught == "other"
+
+    # return if match on year 20**
+    return if self.when_taught.match(/^20\d{2}$/).present?
+
+    # return if match on year range 20**-20**
+    return if self.when_taught.match(/^20\d{2}-20\d{2}$/).present?
+
+    # return if match on comma delimited years, 20**(,20**)
+    return if self.when_taught.match(/^20\d{2}(,20\d{2})+$/).present?
+
+    # return if match on semester, or month, plus year
+    if self.when_taught.match(/^(spring|summer|fall|winter|january|february|march|april|may|june|july|august|september|october|november|december)(20\d{2})?$/).present?
+      if $2.present?
+        self.when_taught = "#{$1} #{$2}"
+      end
+      return
+    end
+
+    errors.add(:when_taught, "is not valid. Please read instructiosn below to learn valid options.")
+  end
 
   searchable(:include => [:tags]) do
     text :display_name
@@ -153,6 +185,14 @@ class Playlist < ActiveRecord::Base
     self.playlist_items.each_with_index do |pi, index|
       pi.update_attribute(:position, self.counter_start + index)
     end
+  end
+
+  def public_count
+    self.playlist_items.select { |pi| pi.public_notes }.count
+  end
+
+  def private_count
+    self.playlist_items.select { |pi| !pi.public_notes }.count
   end
 
   def users_by_permission
