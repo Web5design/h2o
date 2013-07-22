@@ -80,16 +80,15 @@ class PlaylistsController < BaseController
 
   # GET /playlists/1
   def show
-
     @page_cache = true if @playlist.public?
     @editability_path = access_level_playlist_path(@playlist)
     add_javascripts ['playlists', 'jquery.tipsy', 'jquery.nestable']
     add_stylesheets ['playlists']
 
+
     @owner = @playlist.owners.first
     @author_playlists = @owner.playlists.paginate(:page => 1, :per_page => 5)
     @can_edit = current_user && (@playlist.admin? || @playlist.owner?)
-    @parents = Playlist.find(:all, :conditions => { :id => @playlist.relation_ids })
   end
 
   def check_export

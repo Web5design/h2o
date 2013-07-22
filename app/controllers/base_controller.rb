@@ -177,7 +177,7 @@ class BaseController < ApplicationController
   def load_single_resource
     if params[:id].present?
       model = params[:controller] == "medias" ? Media : params[:controller].singularize.classify.constantize
-      item = model.find(params[:id])
+      item = (model == Playlist && params[:action] == "show") ? model.find(params[:id], :include => :playlist_items) : model.find(params[:id])
       if item.present?
         @single_resource = item
         instance_variable_set "@#{model.to_s.tableize.singularize}", item

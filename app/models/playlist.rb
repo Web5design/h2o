@@ -195,6 +195,10 @@ class Playlist < ActiveRecord::Base
     self.playlist_items.select { |pi| !pi.public_notes }.count
   end
 
+  def total_count
+    self.playlist_items.count
+  end
+
   def users_by_permission
     if self.name == "Your Bookmarks" || self.public
       return []
