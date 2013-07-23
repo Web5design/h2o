@@ -151,7 +151,7 @@ class Playlist < ActiveRecord::Base
 	      if pi.resource_item_type == 'ItemCollage' && pi.resource_item.actual_object
 	        shown_word_count += pi.resource_item.actual_object.words_shown.to_i
 	        total_word_count += (pi.resource_item.actual_object.word_count.to_i-1)
-	      elsif pi.resource_item_type == 'ItemPlaylist' && pi.resource_item.actual_object
+	      elsif pi.resource_item_type == 'ItemPlaylist' && pi.resource_item.actual_object && pi.resource_item.actual_object != self
 	        res = pi.resource_item.actual_object.collage_word_count
 	        shown_word_count += res[0]
 	        total_word_count += res[1]

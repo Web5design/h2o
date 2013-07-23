@@ -33,7 +33,7 @@
 	    :label => 'Tags',
 	    :input_html => { :class => 'tagging-autofill-tags' }
 	  %>
-    <%= form.input :location_id,
+    <%#= form.input :location_id,
       :as => :select,
       :collection => Location.all(:order => 'name'),
       :label => 'Where Taught',
