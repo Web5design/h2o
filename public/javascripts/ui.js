@@ -12,7 +12,7 @@ var panel_width;
 var min_tick_width = 10;
 var item_offset_top;
 var right_offset;
-
+var user_playlists = {};
 var scife_fn_clicked = function() {
 };
 
@@ -263,13 +263,6 @@ jQuery.extend({
           width: 'auto',
           height: 'auto',
         }).dialog('open');
-        if(jQuery('.singleitem').size() || jQuery.classType() == 'base') {
-          //jQuery('.add-popup').hide().css({ top: '50%', left: '50%' }).fadeIn(100);
-        } else {
-          /* var listitem_element = jQuery('#listitem_' + popup_item_type + popup_item_id);
-          listitem_element.addClass('with_popup');
-          var position = listitem_element.offset(); */
-        }
       }
 
       return false;
@@ -569,15 +562,9 @@ jQuery.extend({
       }
     });
   },
-  loadGenericEditability: function() {
-    if(jQuery('a#logged-in').size()) {
-      jQuery('.requires_logged_in').animate({ opacity: 1.0 });
-    }
-  },
   loadEditability: function() {
     if(jQuery.cookie('user_id') == null) {
       //lack of cookies indicate user not logged in. Skipping
-      jQuery.showGlobalSpinnerNode();
       jQuery('.requires_edit, .requires_logged_in, .requires_remove, .requires_non_anonymous').remove();
       jQuery('.afterload').css('opacity', 1.0);
       jQuery.setFixedLinkPosition();
@@ -586,7 +573,25 @@ jQuery.extend({
         last_data = original_data;
         jQuery.loadState();
       }
-      jQuery.hideGlobalSpinnerNode();
+      return;
+    } else {
+      if(eval(jQuery.cookie('anonymous_user'))) {
+        jQuery('.requires_non_anonymous').remove(); 
+      } else {
+        jQuery('.requires_non_anonymous').animate({ opacity: 1.0 });
+      }
+      jQuery('#user_account').append(jQuery('<a>').html(jQuery.cookie('display_name').replace(/\+/g, ' ') + ' Dashboard').attr('href', "/users/" + jQuery.cookie('user_id')));
+      jQuery('#defect_user_id').val(jQuery.cookie('user_id'));
+      jQuery('.requires_logged_in').animate({ opacity: 1.0 });
+      jQuery('#header_login').remove();
+      if(jQuery.classType() == 'base') {
+        jQuery('#base_dashboard').attr('href', "/users/" + jQuery.cookie('user_id'));
+        jQuery('#get_started').remove();
+      }
+    }
+
+    if(editability_path == '') {
+      jQuery('.afterload').animate({ opacity: 1.0 });
       return;
     }
 
@@ -606,30 +611,7 @@ jQuery.extend({
         jQuery.hideGlobalSpinnerNode();
       },
       success: function(results){
-        //Global methods
         access_results = results;
-        if(results.logged_in) {
-          var data = jQuery.parseJSON(results.logged_in);
-          if(eval(jQuery.cookie('anonymous_user'))) {
-            data.user.login = 'ANONYMOUS';
-            jQuery('.requires_non_anonymous').remove(); 
-          } else {
-            jQuery('.requires_non_anonymous').animate({ opacity: 1.0 });
-          }
-          jQuery('#user_account').append(jQuery('<a>').html(results.display_name + ' Dashboard').attr('href', "/users/" + data.user.id));
-          jQuery('#defect_user_id').val(data.user.id);
-          jQuery('.requires_logged_in').animate({ opacity: 1.0 });
-          jQuery('#header_login').remove();
-          if(jQuery.classType() == 'base') {
-            jQuery('#base_dashboard').attr('href', "/users/" + data.user.id);
-            jQuery('#get_started').remove();
-          }
-          user_playlists = jQuery.parseJSON(results.playlists) || new Array();
-          user_bookmarks = jQuery.parseJSON(results.bookmarks) || new Array();
-          jQuery.updateExistingBookmarks();
-        } else {
-          jQuery('.requires_logged_in, .requires_non_anonymous').remove();
-        }
         jQuery('.afterload').animate({ opacity: 1.0 });
         jQuery.hideGlobalSpinnerNode();
 
@@ -931,17 +913,20 @@ jQuery.extend({
   Generic bookmark item, more details here.
   */
   updateExistingBookmarks: function() {
-    if(jQuery('.singleitem').size()) {
-      var key = 'listitem_' + jQuery.classType().replace(/s$/, '') + jQuery('.singleitem').data('itemid');
-      if(user_bookmarks[key]) {
-        var el = jQuery('.bookmark-action');
-        el.removeClass('bookmark-action link-bookmark').addClass('delete-bookmark-action link-delete-bookmark').html('<span class="icon icon-delete-bookmark-large"></span>');
-        jQuery('.delete-bookmark-action').attr('original-title', el.attr('original-title').replace(/^Bookmark/, 'Un-Bookmark'));
-      }
-    } else {
-      jQuery.each(user_bookmarks, function(i, j) {
-        jQuery('#' + i + ' .bookmark-action').removeClass('bookmark-action link-bookmark').addClass('delete-bookmark-action link-delete-bookmark').html('<span class="icon icon-delete-bookmark"></span>UN-BOOKMARK');
-      });
+    if(jQuery.cookie('bookmarks') != null) {
+      var bookmarks = jQuery.parseJSON(jQuery.cookie('bookmarks'));
+	    if(jQuery('.singleitem').size()) {
+	      var key = jQuery.classType().replace(/s$/, '') + jQuery('.singleitem').data('itemid');
+	      if(jQuery.inArray(key, bookmarks) != -1) {
+	        var el = jQuery('.bookmark-action');
+	        el.removeClass('bookmark-action link-bookmark').addClass('delete-bookmark-action link-delete-bookmark').html('<span class="icon icon-delete-bookmark-large"></span>');
+	        jQuery('.delete-bookmark-action').attr('title', el.attr('title').replace(/^Bookmark/, 'Un-Bookmark'));
+	      }
+	    } else {
+	      jQuery.each(bookmarks, function(i, j) {
+	        jQuery('#listitem_' + j + ' .bookmark-action').removeClass('bookmark-action link-bookmark').addClass('delete-bookmark-action link-delete-bookmark').html('<span class="icon icon-delete-bookmark"></span>UN-BOOKMARK');
+	      });
+	    }
     }
   },
   observeBookmarkControls: function() {
@@ -961,6 +946,10 @@ jQuery.extend({
         success: function(data) {
           jQuery('.add-popup').hide();
           jQuery.hideGlobalSpinnerNode();
+   
+          var bookmarks = jQuery.parseJSON(jQuery.cookie('bookmarks'));
+          bookmarks.push(el.data('type') + el.data('itemid'));
+          jQuery.cookie('bookmarks', JSON.stringify(bookmarks), { path: '/' });
 
           if(jQuery('.singleitem').size()) {
             jQuery('.bookmark-action')
@@ -992,6 +981,11 @@ jQuery.extend({
         },
         success: function(data) {
           jQuery.hideGlobalSpinnerNode();
+   
+          var bookmarks = jQuery.parseJSON(jQuery.cookie('bookmarks'));
+          bookmarks.splice(jQuery.inArray(el.data('type') + el.data('itemid'), bookmarks), 1);
+          jQuery.cookie('bookmarks', JSON.stringify(bookmarks), { path: '/' });
+
           if(jQuery('body').hasClass('busers_show') && jQuery('#results_bookmarks').has(el).length > 0) {
             var listitem = el.parentsUntil('#results_bookmarks').last();
             listitem.slideUp(200, function() {
@@ -1083,6 +1077,18 @@ jQuery.extend({
       }
     }).dialog('open');
   },
+  initiailizeUserPlaylists: function() {
+    if(jQuery.cookie('playlists') == null) {
+      return;
+    }
+    user_playlists = jQuery.parseJSON(jQuery.cookie('playlists'));
+    jQuery.each(user_playlists, function(i, j) {
+      j.playlist.name = j.playlist.name.replace(/\+/g, ' ');
+      jQuery('#listitem_playlist' + j.playlist.id + ' .push-action').addClass('mark-for-keep');
+    });
+    jQuery('.push-action:not(.mark-for-keep)').remove();
+    jQuery('.push-action').show();
+  },
   submitGenericNode: function() {
     jQuery('#generic-node #error_block').html('').hide();
     var buttons = jQuery('#generic-node').parent().find('button');
@@ -1133,6 +1139,10 @@ jQuery.extend({
 });
 
 jQuery(function() {
+  jQuery.loadEditability();
+  jQuery.updateExistingBookmarks();
+  jQuery.initiailizeUserPlaylists();
+
   //Keep this early to adjust font sizes early
   jQuery.adjustArticleHeaderSizes();
 
@@ -1184,7 +1194,6 @@ jQuery(function() {
     jQuery.listResults(url);
   }
 
-  jQuery.loadGenericEditability();
   jQuery.initializeBarcodes();
   jQuery.observeDestroyControls('');
   jQuery.observeGenericControls('');
@@ -1214,11 +1223,6 @@ jQuery(function() {
   jQuery.resetRightPanelThreshold();
   jQuery.observeDefaultPrintListener();
 
-  //Note: Do this before loadEditability, so bookmarks can be marked
-  jQuery.updateExistingBookmarks();
-  if(editability_path != '') {
-    jQuery.loadEditability();
-  }
   if(jQuery('body').hasClass('action_index')) {
     jQuery.setListLinkVisibility();
   }

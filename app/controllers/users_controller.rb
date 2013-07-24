@@ -41,6 +41,7 @@ class UsersController < ApplicationController
       if result
         apply_user_preferences(user)
         cookies[:anonymous_user] = true
+        cookies[:display_name] = "ANONYMOUS"
         if request.xhr?
           #text doesn't matter, it's the return code that does
           render :text => (session[:return_to] || '/')
@@ -219,6 +220,7 @@ end
     playlist = Playlist.find(current_user.bookmark_id)
 
     playlist_item_to_delete = playlist.playlist_items.detect { |pi| pi.resource_item_type == "Item#{params[:type].classify}" && pi.resource_item.actual_object_id == params[:id].to_i }
+      
     if playlist_item_to_delete && playlist_item_to_delete.destroy
       render :json => { :success => true }
     else

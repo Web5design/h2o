@@ -130,9 +130,7 @@ class ApplicationController < ActionController::Base
   end
  
   def common_index(model)
-User.benchmark "Perf: set belongings" do
     set_belongings model
-end
 
     @page_title = "#{model.to_s.pluralize} | H2O Classroom Tools"
     @page_title = "Media Items | H2O Classroom Tools" if model == Media
@@ -145,9 +143,7 @@ end
 
     params[:page] ||= 1
 
-User.benchmark "Perf: run search" do 
     @collection = build_search(model, params)
-end
 
     if request.xhr?
       render :partial => 'shared/generic_block'
@@ -252,10 +248,13 @@ end
       cookies[:display_name] = user.simple_display
       cookies[:user_id] = user.id
       cookies[:anonymous_user] = false
+      cookies[:bookmarks] = user.bookmarks_map.to_json
+      cookies[:playlists] = user.playlists.to_json(:only => [:id, :name])
     end
   end
   def destroy_user_preferences(user)
-    [:font_size, :use_new_tab, :show_annotations, :display_name, :user_id, :anonymous_user].each do |attr|
+    [:font_size, :use_new_tab, :show_annotations, :display_name,
+     :user_id, :anonymous_user, :bookmarks, :playlists].each do |attr|
       cookies.delete(attr)
     end
   end

@@ -465,6 +465,9 @@ color: #999;
 #results li.listitem h3 .icon {
   visibility: hidden;
 }
+#results li.listitem .controls .push-action {
+  display: none;
+}
 #results li.listitem .details h3 .read-action {
   text-indent: 0px;
   font-size: 11px;

@@ -50,22 +50,17 @@ class PlaylistsController < BaseController
       can_edit_desc = can_edit || current_user.can_permission_playlist("edit_descriptions", @playlist)
       notes = can_edit_notes ? @playlist.playlist_items : @playlist.playlist_items.select { |pi| !pi.public_notes }
       render :json => {
-        :logged_in            => current_user.to_json(:only => [:id, :login]),
         :can_edit             => can_edit,
         :notes                => can_edit_notes ? notes.to_json(:only => [:id, :notes, :public_notes]) : "[]",
-        :playlists            => current_user.playlists.to_json(:only => [:id, :name]),
         :can_position_update  => can_position_update,
         :can_edit_notes       => can_edit_notes,
-        :bookmarks            => current_user.bookmarks_map.to_json,
         :custom_block         => 'playlist_afterload',
         :can_edit_desc        => can_edit_desc
       }
     else
       render :json => {
-        :logged_in            => false,
         :can_edit             => false,
         :notes                => [],
-        :playlists            => [],
         :can_position_update  => false,
         :can_edit_notes       => false,
         :custom_block         => 'playlist_afterload',

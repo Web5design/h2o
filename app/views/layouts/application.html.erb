@@ -75,13 +75,6 @@ var UTC_OFFSET = #{Time.zone.now.utc_offset * 1000};") %>
 
 <script type="text/javascript">
   var editability_path = '<%= @editability_path || '' %>';
-  <% if current_user && !@page_cache -%>
-  var user_bookmarks = <%= raw(current_user.bookmarks_map.to_json) %>;
-  var user_playlists = <%= raw(current_user.playlists.to_json(:only => [:id, :name])) %>
-  <% else -%>
-  var user_bookmarks = {};
-  var user_playlists = new Array();
-  <% end -%>
 </script>
 
   </body>

@@ -186,9 +186,9 @@ class User < ActiveRecord::Base
 
   def bookmarks_map
     Rails.cache.fetch("user-bookmarks-map-#{self.id}") do
-      map = {}
+      map = []
       self.bookmarks.each do |i|
-        map["listitem_#{i.resource_item_type.tableize.singularize.gsub('item_', '')}#{i.resource_item.actual_object_id}"] = 1 if (i.resource_item && i.resource_item.actual_object)
+        map << "#{i.resource_item_type.tableize.singularize.gsub('item_', '')}#{i.resource_item.actual_object_id}" if (i.resource_item && i.resource_item.actual_object)
       end
       map
     end
