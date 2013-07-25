@@ -846,9 +846,8 @@ jQuery.extend({
   The listed item is then removed from the UI.
   */
   observeDestroyControls: function(region){
-    //generic_item_delete
-    //generic_item_cancel
     jQuery('#generic_item_cancel').live('click', function(e) {
+      e.preventDefault();
       jQuery('#generic_item_form').slideUp(200, function() {
         jQuery(this).remove();
       });
@@ -893,7 +892,7 @@ jQuery.extend({
       if(jQuery('.singleitem').length && jQuery('.singleitem #description').has(jQuery(this)).length > 0) {
         listing = jQuery('#description');
       } else {
-        listing = jQuery('#listitem_' + type + item_id);
+        listing = jQuery(this).parentsUntil('ul').last();
 	      if(listing.find('#generic_item_form').size()) {
 	        return;
 	      }
