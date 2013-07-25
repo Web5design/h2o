@@ -17,8 +17,8 @@ class ItemBaseSweeper < ActionController::Caching::Sweeper
   end
 
   def after_create(record)
-    if params && params.has_key?(:container_id)
-      playlist = Playlist.find(params[:container_id])
+    if params && params.has_key?(:playlist_id)
+      playlist = Playlist.find(params[:playlist_id])
       clear_playlists(playlist)
     end
     if record && [ItemPlaylist, ItemCollage, ItemMedia, ItemTextBlock, ItemCase].include?(record.class) && record.actual_object

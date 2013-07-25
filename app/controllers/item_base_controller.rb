@@ -197,7 +197,7 @@ class ItemBaseController < BaseController
 
   def create_object_and_load_playlist
     @object = @model_class.new
-    @playlist = Playlist.find(params[:container_id])
+    @playlist = Playlist.find(params[:playlist_id])
   end
 
 end

@@ -1301,4 +1301,30 @@ var remix_item_template = '\
 </form>\
 ';
 
-
+//for collage, default, playlist, {{name}} is object name
+//for collage, playlist, default, {{description}} is object description
+//for default, {{url}} is actual item url
+//item_url is url of object in app
+var new_playlist_item_template = '\
+<div class="new" id="playlist_item_form">\
+  <div style="display: none;" class="error ui-corner-all" id="error_block"></div>\
+  <form method="post" id="new_item_playlist" class="new formtastic item_playlist" action="/item_playlists">\
+  <fieldset class="inputs">\
+    <ol>\
+      <li id="item_playlist_name_input" class="string required">\
+        <label for="item_playlist_name">Name<abbr title="required">*</abbr></label>\
+        <input type="text" value="{{name}}" size="50" name="item_playlist[name]" maxlength="1024" id="item_playlist_name" class="ui-widget-content ui-corner-all">\
+      </li>\
+      <li id="item_playlist_description_input" class="text optional">\
+        <label for="item_playlist_description">Description</label>\
+        <textarea rows="5" name="item_playlist[description]" id="item_playlist_description" cols="40" class="ui-widget-content ui-corner-all">{{description}}</textarea>\
+      </li>\
+      <li id="item_playlist_url_input" class="hidden required">\
+        <input type="hidden" value="{{item_url}}" name="item_playlist[url]" id="item_playlist_url">\
+      </li>\
+      <input type="hidden" value="{{playlist_id}}" name="playlist_id">\
+      <input type="hidden" name="position" id="position">\
+    </ol>\
+  </fieldset>\
+  </form>\
+</div>';

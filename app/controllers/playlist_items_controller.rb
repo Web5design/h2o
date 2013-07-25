@@ -24,8 +24,9 @@ class PlaylistItemsController < BaseController
       :last => false }
   end
 
+=begin
   def new
-    @playlist_item = PlaylistItem.new(:playlist_id => params[:container_id])
+    @playlist_item = PlaylistItem.new(:playlist_id => params[:playlist_id])
 
     respond_to do |format|
       format.js
@@ -33,6 +34,7 @@ class PlaylistItemsController < BaseController
       format.xml  { render :xml => @playlist_item }
     end
   end
+=end
 
   def edit
     @playlist_item = PlaylistItem.find(params[:id])
@@ -81,7 +83,7 @@ class PlaylistItemsController < BaseController
 
   # Used in the ajax stuff to emit a representation of this individual item.
   def block
-    @playlist = Playlist.find(params[:container_id] || params[:playlist_id])
+    @playlist = Playlist.find(params[:playlist_id])
 
     respond_to do |format|
       format.html {
@@ -94,8 +96,8 @@ class PlaylistItemsController < BaseController
   end
 
   def load_playlist
-    if params[:playlist_id] || params[:container_id]
-      @playlist = Playlist.find(params[:playlist_id] || params[:container_id])
+    if params[:playlist_id]
+      @playlist = Playlist.find(params[:playlist_id])
     end
     @my_playlist = (current_user) ? current_user.playlists.include?(@playlist) : false
   end

@@ -145,6 +145,10 @@ class ApplicationController < ActionController::Base
 
     @collection = build_search(model, params)
 
+    Rails.logger.warn "stephie here"
+    @description_map = @collection.results.inject({}) { |h, r| h["#{r.class}#{r.id}"] = r.description; h }
+    Rails.logger.warn "stephie: #{@description_map.inspect}"
+
     if request.xhr?
       render :partial => 'shared/generic_block'
     else
