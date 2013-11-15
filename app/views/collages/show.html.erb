@@ -92,14 +92,23 @@
     <%= Collage.format_content(@collage.description) %>
     <%= link_to raw('<span class="icon icon-edit"></span>EDIT COLLAGE INFORMATION<span class="icon icon-arrow"></span>'), edit_collage_path(@collage), :class => "edit-action requires_edit collage_edit scale0-8" %>
     <%= link_to raw('<span class="icon icon-delete"></span>DELETE COLLAGE<span class="icon icon-arrow"></span>'), @collage, "data-type" => "collage", "data-id" => @collage.id, :class => "delete-action requires_edit scale0-8" %>
+    <% if @collage.annotator_version == 1 %>
+    <%= link_to raw('<span class="icon icon-upgrade"></span>UPGRADE COLLAGE<span class="icon icon-arrow"></span>'), @collage, "data-type" => "collage", "data-id" => @collage.id, :class => "upgrade-action requires_edit scale0-8" %>
+    <% end -%>
   </div>
 
   <div class="ajax-error" id="ajax-error-<%= @collage.id %>" style="display: none;"></div>
-  <% cache("collage-#{@collage.id}-editable-content") do %>
-  <article>
+  <div class="article">
+  <% if @collage.annotator_version == 1 %>
+    <% cache("collage-#{@collage.id}-editable-content") do %>
     <%= raw @collage.editable_content %>
-  </article>
+    <% end -%>
+  <% else -%>
+    <% cache("collage-#{@collage.id}-editable-content-v2") do %>
+    <%= raw @collage.editable_content_v2 %>
+    <% end -%>
   <% end -%>
+  </div>
 </div>
 
 <div id="stats" class="right_panel">
@@ -151,4 +160,5 @@ var annotations = <%= raw @collage.annotations.inject({}) { |h, a| h["a#{a.id}"]
 var collage_links = <%= raw @collage.collage_links.inject({}) { |h, a| h["c#{a.id}"] =  a; h }.to_json %>;
 var color_list = <%= raw Collage.color_list.to_json %>;
 var layer_color_map = <%= raw @color_map.to_json %>;
+var layer_data = <%= raw @collage.layer_data.to_json %>;
 </script>

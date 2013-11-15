@@ -1,47 +1,47 @@
-#collage article {
+#collage .article {
   opacity: 1.0;
   color:#000;
   padding:13px 30px 0 45px;
   height:100%; 
   background: #FFF;
 }
-#collage article p,
-#collage article h2,
-#collage article h3,
-#collage article h4 {
+#collage .article p,
+#collage .article h2,
+#collage .article h3,
+#collage .article h4 {
   margin-left: 15px;
 }
-#collage article pre {
+#collage .article pre {
   white-space: pre-line;
 }
-#collage article blockquote {
+#collage .article blockquote {
   padding-left: 15px;
   margin: 0px 0px 16px 60px;
 }
-#collage article blockquote p {
+#collage .article blockquote p {
   margin-left: 0px; 
 }
-#collage article .annotation-content { 
+#collage .article .annotation-content { 
   color: #6b933d; 
   display: none; 
   padding: 0px 0px 0px 3px; 
   font-style: italic;
 }
-#collage article .annotation-content strong { 
+#collage .article .annotation-content strong { 
   font-weight: bold;
 }
-#collage article .annotation-content em { 
+#collage .article .annotation-content em { 
   text-decoration: underline;
 }
-#collage article .annotation-ellipsis { 
+#collage .article .annotation-ellipsis { 
   padding: 0px 5px; 
   display: none; 
   color: #336699;
 }
-#collage article .ann-details { 
+#collage .article .ann-details { 
   display: none;
 }
-#collage article .no_visible_children { 
+#collage .article .no_visible_children { 
   display: none;
 }
 
@@ -126,37 +126,37 @@
 
 
 /* Hover */
-#collage article .control-divider:hover,
-#collage article .layered-control:hover,
-#collage article .annotation-ellipsis:hover,
-#collage article .annotation-asterisk:hover,
-#collage article .unlayered-control:hover,
-#collage article .unlayered-ellipsis:hover {
+#collage .article .control-divider:hover,
+#collage .article .layered-control:hover,
+#collage .article .annotation-ellipsis:hover,
+#collage .article .annotation-asterisk:hover,
+#collage .article .unlayered-control:hover,
+#collage .article .unlayered-ellipsis:hover {
   cursor: pointer;
 }
 
 /* Edit Mode Toggles */
-#collage article.edit_mode tt:hover { background: #E0F58D; }
-#collage article tt.a { background: none;}
-#collage article.edit_mode tt.a { background:#eef9d9; }
-#collage article .control-divider { display: none; width: 4px; background-color: #6b933d; height: 16px; margin: 0px 3px 0px 0px; position: relative; top: 2px; }
-#collage article.edit_mode .control-divider { display: inline-block; }
-#collage article.edit_mode .edit_highlight { background: #EEF9D9; }
-#collage article.edit_mode .special_highlight { visibiility: hidden; }
-#collage article .layered-control,
-#collage article .unlayered-control { width: 9px; height: 16px; }
-#collage article.edit_mode .layered-control,
-#collage article.edit_mode .unlayered-control { width: 9px; height: 16px; }
-#collage article .default-hidden,
-#collage article.edit_mode .default-hidden,
+#collage .article.edit_mode tt:hover { background: #E0F58D; }
+#collage .article tt.a { background: none;}
+#collage .article.edit_mode tt.a { background:#eef9d9; }
+#collage .article .control-divider { display: none; width: 4px; background-color: #6b933d; height: 16px; margin: 0px 3px 0px 0px; position: relative; top: 2px; }
+#collage .article.edit_mode .control-divider { display: inline-block; }
+#collage .article.edit_mode .edit_highlight { background: #EEF9D9; }
+#collage .article.edit_mode .special_highlight { visibiility: hidden; }
+#collage .article .layered-control,
+#collage .article .unlayered-control { width: 9px; height: 16px; }
+#collage .article.edit_mode .layered-control,
+#collage .article.edit_mode .unlayered-control { width: 9px; height: 16px; }
+#collage .article .default-hidden,
+#collage .article.edit_mode .default-hidden,
 
-#collage article.hide_unlayered tt { display: none; }
-#collage article.hide_unlayered tt.a { display: inline; }
-#collage article.hide_unlayered .unlayered-control { display: none; }
-#collage article.hide_unlayered .unlayered-ellipsis { display: inline-block; }
-#collage article.show_unlayered tt { display: inline; }
-#collage article.show_unlayered .unlayered-control { display: inline-block; }
-#collage article.show_unlayered .unlayered-ellipsis { display: none; }
+#collage .article.hide_unlayered tt { display: none; }
+#collage .article.hide_unlayered tt.a { display: inline; }
+#collage .article.hide_unlayered .unlayered-control { display: none; }
+#collage .article.hide_unlayered .unlayered-ellipsis { display: inline-block; }
+#collage .article.show_unlayered tt { display: inline; }
+#collage .article.show_unlayered .unlayered-control { display: inline-block; }
+#collage .article.show_unlayered .unlayered-ellipsis { display: none; }
 /* End Edit mode toggles */
 
 .annotation-asterisk { background: url(/images/asterisk.jpg) no-repeat; display: inline-block; width: 14px; height: 17px; }
@@ -228,8 +228,8 @@ form.formtastic fieldset > ol > li.text textarea.markItUpEditor { width: 100%; }
 }
 
 /* Heatmap */
-#collage article tt a.heatmap_tip,
-#collage article tt a.annotation_tip { 
+#collage .article tt a.heatmap_tip,
+#collage .article tt a.annotation_tip { 
   position: absolute; 
   left: 50%;
   top: 0px;

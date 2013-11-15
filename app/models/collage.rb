@@ -123,6 +123,17 @@ class Collage < ActiveRecord::Base
     h["l46"] = '6b0000'
     h
   end
+  
+  def layer_data
+    h = {}
+    self.layers.each do |layer|
+      map = self.color_mappings.detect { |cm| cm.tag_id == layer.id }
+      h["#{layer.name}"] = map.hex if map
+    end
+    #hardcoding required layer as dark red
+    h["required"] = '6b0000'
+    h
+  end
 
   def barcode
     Rails.cache.fetch("collage-barcode-#{self.id}") do
@@ -169,6 +180,31 @@ class Collage < ActiveRecord::Base
       end
     end
     return layers
+  end
+
+  def editable_content_v2
+    doc = Nokogiri::HTML.parse(self.annotatable.content)
+
+    # Footnote markup
+    doc.css("a").each do |li|
+      if li['href'] =~ /^#/
+        li['class'] = 'footnote'
+      end
+    end
+
+    count = 1
+    doc.xpath('//p[not(ancestor::center)] | //center | //h2[not(ancestor::center)]').each do |node|
+      first_child = node.children.first
+      control_node = Nokogiri::XML::Node.new('a', doc)
+      control_node['id'] = "paragraph#{count}"
+      control_node['href'] = "#p#{count}"
+      control_node['class'] = "paragraph-numbering scale0-9"
+      control_node.inner_html = "#{count}"
+      first_child.add_previous_sibling(control_node)
+      count += 1
+    end
+
+    CGI.unescapeHTML(doc.xpath("//html/body/*").to_s)
   end
 
   def editable_content

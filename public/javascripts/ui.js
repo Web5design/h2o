@@ -18,8 +18,6 @@ var scife_fn_clicked = function() {
 var page_load = true;
 var list_results_url = '';
 
-$.noConflict();
-
 jQuery.extend({
   classType: function() {
     return jQuery('body').attr('id').replace(/^b/, '');

@@ -745,7 +745,8 @@ body#bpages .main_wrapper {
 
 .singleitem #description .edit-action,
 .singleitem #description .delete-action,
-.singleitem #description .edit-external {
+.singleitem #description .edit-external,
+.singleitem #description .upgrade-action {
   font-weight:bold;
   text-decoration: none;
   display: inline-block;
@@ -1328,7 +1329,8 @@ ul.user_captcha > li p.inline-errors { display: none; }
 }
 
 /* Article Generic */
-.singleitem article { 
+.singleitem article,
+.singleitem .article { 
   line-height:16px;
   color:#000; 
   padding:13px 9px 0 35px; 
@@ -1343,17 +1345,26 @@ ul.user_captcha > li p.inline-errors { display: none; }
   font-family: 'futura-pt', Verdana, Arial, Helvetica, Sans-Serif;
   display: inline;
 }
-.singleitem article .chorus { text-align:center; padding-bottom:16px; }
-.singleitem article p { padding-bottom:16px; }
-.singleitem article p em { }
-.singleitem article p a { color:#336699; }
-.singleitem article p a.hint { color:#669900; }
-.singleitem article p strong { font-weight:bold; } 
+.singleitem article .chorus,
+.singleitem .article .chorus { text-align:center; padding-bottom:16px; }
+.singleitem article p,
+.singleitem .article p { padding-bottom:16px; }
+.singleitem article p a,
+.singleitem .article p a { color:#336699; }
+.singleitem article p a.hint,
+.singleitem .article p a.hint { color:#669900; }
+.singleitem article p strong,
+.singleitem .article p strong { font-weight:bold; } 
+.singleitem .article h1, 
+.singleitem .article h2, 
+.singleitem .article h3, 
+.singleitem .article h4,
 .singleitem article h1, 
 .singleitem article h2, 
 .singleitem article h3, 
 .singleitem article h4 { margin-bottom: 0.5em; }
-.singleitem article blockquote p {
+.singleitem article blockquote p,
+.singleitem .article blockquote p {
   margin-left: 0px;
   margin-bottom: 16px;
   padding-bottom: 0px;

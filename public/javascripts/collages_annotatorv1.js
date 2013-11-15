@@ -14,6 +14,79 @@ var unlayered_tts;
 var update_unlayered_end = 0;
 
 jQuery.extend({
+  xPathFromSingleNode: function(node, type, root_selector) {
+    var index = node.parent().find('> *').index(node);
+    if(type == 'end') {
+      index += 1;
+    }
+    var prev_items = node.parent().find('> *:lt(' + index + ')');
+    var offset = 0;
+    for(var j = 0; j < prev_items.size(); j++) {
+      offset += jQuery(prev_items[j]).html().length;
+    }
+    if(type == 'end') {
+      offset -= 1;
+    }
+    var path = '';
+    console.log(node.parentsUntil(root_selector));
+    jQuery.each(node.parentsUntil(root_selector), function(i, el) {
+      var tagName = jQuery(el)[0].tagName;
+      var idx = jQuery(el).parent().children(tagName).index(jQuery(el)) + 1;
+      idx = "[" + idx + "]";
+      path = "/" + jQuery(el)[0].tagName.toLowerCase() + idx + path;
+    });
+    return { "xpath" : path, "offset" : offset };
+  },
+  xPathFromAllAnnotations: function() {
+    all_tts.show();
+    $('.control-divider,.layered-control,.annotation-ellipsis,.annotation-content,.annotation-asterisk').remove();
+    var data = {};
+    jQuery.each(clean_annotations, function(i, annotation) {
+      var start_data = jQuery.xPathFromSingleNode(jQuery('tt#' + annotation.annotation_start), 'start', 'div.article');
+      var end_data = jQuery.xPathFromSingleNode(jQuery('tt#' + annotation.annotation_end), 'end', 'div.article');
+      data[annotation.id] = { "xpath_start": start_data.xpath, "xpath_end" : end_data.xpath, "start_offset" : start_data.offset, "end_offset" : end_data.offset }; 
+    });
+    return data;
+  },
+  observeUpgradeCollage: function() {
+    jQuery('.upgrade-action').live('click', function(e) {
+      e.preventDefault();
+      var node = jQuery('<p>').html('You have chosen to upgrade the annotator tool used by this collage. Would you like to continue?');
+      //TODO: Move this below
+      var data = jQuery.xPathFromAllAnnotations();
+      console.log(data);
+      //return;
+      jQuery(node).dialog({
+        title: 'Upgrade Collage Annotation Tool',
+        width: 'auto',
+        height: 'auto',
+        buttons: {
+          Yes: function() {
+            jQuery.ajax({
+              type: 'post',
+              dataType: 'json',
+              data: { "annotation_data" : data },
+              url: '/collages/' + jQuery('#collage').data('itemid') + '/upgrade_annotator',
+              beforeSend: function() {
+                jQuery.showGlobalSpinnerNode();
+              },
+              success: function(data) {
+                setTimeout(function() {
+                  location.reload();
+                }, 500);
+              },
+              complete: function() {
+                jQuery.hideGlobalSpinnerNode();
+              }
+            });
+          },
+          No: function() {
+            jQuery(node).dialog('close');
+          }
+        }
+      });
+    });
+  },
   observeDeleteInheritedAnnotations: function () {
     jQuery('#delete_inherited_annotations').live('click', function(e) {
       e.preventDefault();
@@ -1438,6 +1511,7 @@ jQuery(document).ready(function(){
 
     jQuery.slideToParagraph();
     jQuery.observeDeleteInheritedAnnotations();
+    jQuery.observeUpgradeCollage();
 
     //Must be after onclicks initiated
     if(jQuery.cookie('user_id') == null) {
