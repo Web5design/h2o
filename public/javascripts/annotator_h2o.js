@@ -318,11 +318,9 @@ Annotator.Plugin.H2O = (function() {
   };
 
   H2O.prototype.setUnlayeredAll = function() {
-    $('.unlayered-border-end,.unlayered-border-start,.unlayered-ellipsis').remove();
-    $('span.unlayered').contents().unwrap();
-
-    $('#text_block *:not(.annotator-hl):not(:has(.annotator-hl))').addClass('unlayered');
-    $.each($('#text_block *:not(.annotator-hl):has(.annotator-hl)'), function(i, el) {
+  console.log('steph inside here');
+    $('.annotator-wrapper *:not(.annotator-hl):not(:has(.annotator-hl))').addClass('unlayered');
+    $.each($('.annotator-wrapper *:not(.annotator-hl):has(.annotator-hl)'), function(i, el) {
       if($(el).children(':not(.annotator-hl):has(.annotator-hl)').size() == 0) {
         var contents = $(el).contents();
         for(var _i = 0; _i < contents.length; _i++) {
@@ -370,6 +368,7 @@ Annotator.Plugin.H2O = (function() {
       $('.unlayered-' + key).show();
       $('.unlayered-border-start-' + key + ',.unlayered-border-end-' + key).css('display', 'inline-block');
       $(this).hide();
+      jQuery.hideShowUnlayeredOptions();
     });
     $('.unlayered-border-start,.unlayered-border-end').off('click').on('click', function(e) {
       e.preventDefault();
@@ -377,6 +376,7 @@ Annotator.Plugin.H2O = (function() {
       $('.unlayered-' + key).hide();
       $('.unlayered-ellipsis-' + key).show();
       $('.unlayered-border-start-' + key + ',.unlayered-border-end-' + key).hide();
+      jQuery.hideShowUnlayeredOptions();
     });
   };
 

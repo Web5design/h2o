@@ -100,7 +100,7 @@ jQuery.extend({
         },
         success: function(data){
           jQuery('.unlayered-ellipsis:visible').click();
-          jQuery('#collage article').removeClass('hide_unlayered').addClass('show_unlayered');
+          jQuery('#collage div.article').removeClass('hide_unlayered').addClass('show_unlayered');
           jQuery.hideShowUnlayeredOptions();
           var deleted_annotations = jQuery.parseJSON(data.deleted);
           jQuery.each(deleted_annotations, function(i, a) {
@@ -203,13 +203,13 @@ jQuery.extend({
     });
   },
   observeFootnoteLinks: function() {
-    jQuery.each(jQuery('article a.footnote'), function(i, el) {
+    jQuery.each(jQuery('div.article a.footnote'), function(i, el) {
       jQuery(el).attr('href', unescape(jQuery(el).attr('href')));
       jQuery(el).attr('name', unescape(jQuery(el).attr('name')));
     });
-    jQuery('article a.footnote').click(function() {
+    jQuery('div.article a.footnote').click(function() {
       var href = jQuery(this).attr('href').replace('#', '');
-      var link = jQuery("article a[name='" + href + "']");
+      var link = jQuery("div.article a[name='" + href + "']");
       if(link.size()) {
         var pos = link.offset().top;
         jQuery(window).scrollTop(pos - 150);
@@ -422,15 +422,15 @@ jQuery.extend({
       e.preventDefault();
       jQuery.showGlobalSpinnerNode();
       jQuery('.unlayered-ellipsis:visible').click();
-      jQuery('#collage article').removeClass('hide_unlayered').addClass('show_unlayered');
+      jQuery('#collage div.article').removeClass('hide_unlayered').addClass('show_unlayered');
       jQuery.hideShowUnlayeredOptions();
       jQuery.hideGlobalSpinnerNode();
     });
     jQuery('#hide_unlayered a').click(function(e) {
       e.preventDefault();
       jQuery.showGlobalSpinnerNode();
-      jQuery('#collage article').removeClass('show_unlayered').addClass('hide_unlayered');
-      jQuery('#collage article .unlayered-control-start').click();
+      jQuery('#collage div.article').removeClass('show_unlayered').addClass('hide_unlayered');
+      jQuery('#collage div.article .unlayered-control-start').click();
       if(jQuery('.unlayered-control-end.unlayered-control-1').size()) {
         jQuery('.unlayered-control-end.unlayered-control-1').click();
       }
@@ -486,8 +486,8 @@ jQuery.extend({
       }
       if(el.hasClass('highlighted')) {
 
-        jQuery('article .' + id + ',.ann-annotation-' + id).css('display', 'inline-block');
-        jQuery('article tt.' + id).css('display', 'inline');
+        jQuery('div.article .' + id + ',.ann-annotation-' + id).css('display', 'inline-block');
+        jQuery('div.article tt.' + id).css('display', 'inline');
         jQuery('.annotation-ellipsis-' + id).css('display', 'none');
         var hex = '#' + layer_info[id].hex;
         jQuery.each(jQuery('tt.' + id), function(i, el) {
@@ -509,8 +509,8 @@ jQuery.extend({
         });
         el.removeClass('highlighted').html('HIGHLIGHT "' + layer_name + '"<span class="indicator" style="background-color:' + indicator_hex + '"></span>');
       } else {
-        jQuery('article .' + id + ',.ann-annotation-' + id).css('display', 'inline-block');
-        jQuery('article tt.' + id).css('display', 'inline');
+        jQuery('div.article .' + id + ',.ann-annotation-' + id).css('display', 'inline-block');
+        jQuery('div.article tt.' + id).css('display', 'inline');
         jQuery('.annotation-ellipsis-' + id).css('display', 'none');
 
         var hex = '#' + layer_info[id].hex;
@@ -559,7 +559,7 @@ jQuery.extend({
     });
   },
   recordCollageState: function(data, show_message) {
-    var words_shown = jQuery('#collage article tt').filter(':visible').size();
+    var words_shown = jQuery('#collage div.article tt').filter(':visible').size();
     jQuery.ajax({
       type: 'POST',
       cache: false,
@@ -818,7 +818,7 @@ jQuery.extend({
     delete clean_annotations["a" + annotation.id];
     jQuery.updateAnnotationCount();
 
-    unlayered_tts = jQuery('#collage article tt:not(.a)');
+    unlayered_tts = jQuery('#collage div.article tt:not(.a)');
   },
   markupAnnotation: function(annotation, layer_color_map, page_load) {
     var annotation_start = parseInt(annotation.annotation_start.replace(/^t/, ''));
@@ -933,7 +933,7 @@ jQuery.extend({
     clean_annotations["a" + annotation.id] = annotation;
 
     if(!page_load) {
-      unlayered_tts = jQuery('#collage article tt:not(.a)');
+      unlayered_tts = jQuery('#collage div.article tt:not(.a)');
       jQuery('#annotation-content-' + annotation.id).css('display', 'inline-block');
     }
     jQuery.updateAnnotationCount();
@@ -1033,7 +1033,7 @@ jQuery.extend({
     clean_collage_links["c" + collage_link.id] = collage_link;
   },
   resetParentDisplay: function(els) {
-    var parents = els.parentsUntil('#collage article');
+    var parents = els.parentsUntil('#collage div.article');
     parents.removeClass('no_visible_children');
     parents.filter(':not(:has(.layered-control,.control-divider,.unlayered-ellipsis:visible,tt:visible))').addClass('no_visible_children');
   },
@@ -1110,7 +1110,7 @@ jQuery.extend({
     }
   },
   observeSelectors: function() {
-    all_tts = jQuery('#collage article tt');
+    all_tts = jQuery('#collage div.article tt');
     var data = { "unlayered_start_id" : 1, "unlayered_end_id" : 1 };
   },
   observeStatsListener: function() {
@@ -1151,7 +1151,7 @@ jQuery.extend({
       jQuery('#annotation-control-' + id + ',#annotation-asterisk-' + id).css('display', 'inline-block');
       jQuery(this).css('display', 'none');
       jQuery('.layered-control-' + id).css('display', 'inline-block');
-      var subset = jQuery('#collage article tt.a' + id);
+      var subset = jQuery('#collage div.article tt.a' + id);
       subset.css('display', 'inline');
       jQuery.resetParentDisplay(subset);
     });
@@ -1185,9 +1185,9 @@ jQuery.extend({
   },
   toggleEditMode: function(highlight) {
     if(highlight) {
-      jQuery('#collage article').addClass('edit_mode');
+      jQuery('#collage div.article').addClass('edit_mode');
     } else {
-      jQuery('#collage article').removeClass('edit_mode');
+      jQuery('#collage div.article').removeClass('edit_mode');
     }
   },
   observeWords: function(){
@@ -1479,7 +1479,7 @@ jQuery(document).ready(function(){
       jQuery.markupAnnotation(clean_annotations[i], layer_color_map, true);
     });
 
-    unlayered_tts = jQuery('#collage article tt:not(.a)');
+    unlayered_tts = jQuery('#collage div.article tt:not(.a)');
     if(!jQuery('tt#t1').is('.a')) {
       jQuery('<a class="unlayered-ellipsis" id="unlayered-ellipsis-1" data-id="1" href="#">[...]</a>').insertBefore(jQuery('tt#t1'));
     }

@@ -885,7 +885,6 @@
     };
 
     Annotator.prototype.setupAnnotation = function(annotation) {
-    console.log('setting up annotation');
       var e, normed, normedRanges, r, root, _k, _l, _len2, _len3, _ref1;
       root = this.wrapper[0];
       annotation.ranges || (annotation.ranges = this.selectedRanges);
@@ -897,7 +896,6 @@
           normedRanges.push(Range.sniff(r).normalize(root));
         } catch (_error) {
           e = _error;
-        console.log(e);
           if (e instanceof Range.RangeError) {
             this.publish('rangeNormalizeFail', [annotation, r, e]);
           } else {
@@ -2158,10 +2156,14 @@
               "startOffset": annotation.start_offset,
               "endOffset": annotation.end_offset
         }];
+        var category = new Array();
+        for(var _j = 0; _j < annotation.layers.length; _j++) {
+          category.push('layer-' + annotation.layers[_j].name);
+        }
         var formatted_annotation = { "id" : annotation.id,
           "text" : annotation.annotation,
           "ranges": ranges,
-          "category": []
+          "category": category
         };
         formatted_annotation.ranges = ranges;
         annotation_data.push(formatted_annotation);
@@ -2170,7 +2172,6 @@
     };
 
     Store.prototype._onLoadAnnotations = function(data) {
-      console.log(data);
       var a, annotation, annotationMap, newData, _k, _l, _len2, _len3, _ref3;
       if (data == null) {
         data = [];

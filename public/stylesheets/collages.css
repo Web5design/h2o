@@ -168,6 +168,8 @@
 .layered-control-end { display: none; background: url(/images/collapse.png) no-repeat; height: 16px; width: 9px; margin: 0px 3px 0px 0px; position: relative; top: 2px; }
 .paragraph-numbering { position: absolute; left: 30px; color: #369; text-decoration: none; font-weight: normal; font-size: 13px; }
 
+#collage .article .layered-ellipsis { display: none; }
+
 /* MarkItUp */
 /*
 .markItUp { width: 100%; border: none; }

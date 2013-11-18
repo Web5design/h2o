@@ -59,6 +59,7 @@
           <li><a href="#" class="tooltip" title="Show <%= @collage.user.login %>'s version of the collage" id="author_edits">SHOW <%= @collage.user.simple_display %>'S TEXT EDITS</a></li>
         </li>
 
+        <% if @collage.annotator_version == 1 -%>
         <h5>ANNOTATIONS</h5>
         <ul>
           <li id="show_annotations">
@@ -68,6 +69,7 @@
             <a href="#" title="Hide all annotations" class="tooltip" <%= raw 'class="inactive"' if @collage.annotations.inject(0) { |s, a| s + a.annotation_word_count } == 0 %>>CONTRACT ALL ANNOTATIONS</a>
           </li>
         </ul>
+        <% end -%>
 
         <h5>HIGHLIGHTS</h5>
         <ul id="layers_highlights">
