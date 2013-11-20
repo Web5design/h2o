@@ -247,9 +247,18 @@
   Util.mousePosition = function(e, offsetEl) {
     var offset;
     offset = $(offsetEl).position();
+    var additional_top = 0;
+    var additional_left = 0;
+    //Steph TODO: Figure this out, better
+    $.each($(offsetEl).parentsUntil('#shell'), function(i, el) {
+      var additional_offset = $(el).position();
+      additional_top += additional_offset.top; 
+      additional_left += additional_offset.left; 
+    });
+    additional_top = additional_top - 110;
     return {
-      top: e.pageY - offset.top,
-      left: e.pageX - offset.left
+      top: e.pageY - additional_top,
+      left: e.pageX - additional_left
     };
   };
 
@@ -415,8 +424,6 @@
       try {
         return document.evaluate('.' + xp, root, nsResolver, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
       } catch (_error) {
-      console.log(_error);
-      console.log(JSON.stringify(_error));
         exception = _error;
         console.log("XPath evaluation failed.");
         console.log("Trying fallback...");
@@ -921,14 +928,12 @@
         }
         $.merge(annotation.highlights, this.highlightRange(normed, base_css_classes));
       }
-      console.log(annotation);
       annotation.quote = annotation.quote.join(' / ');
       $(annotation.highlights).data('annotation', annotation);
       return annotation;
     };
 
     Annotator.prototype.updateAnnotation = function(annotation) {
-    console.log('inside annotator');
       this.publish('beforeAnnotationUpdated', [annotation]);
       this.publish('annotationUpdated', [annotation]);
       return annotation;
@@ -1136,23 +1141,48 @@
     Annotator.prototype.onAdderClick = function(event) {
       var annotation, cancel, cleanup, position, save,
         _this = this;
+        console.log(this);
       if (event != null) {
         event.preventDefault();
       }
       position = this.adder.position();
       this.adder.hide();
       annotation = this.setupAnnotation(this.createAnnotation());
+
       $(annotation.highlights).addClass('annotator-hl-temporary');
       save = function() {
-        cleanup();
-        $(annotation.highlights).removeClass('annotator-hl-temporary');
-        return _this.publish('annotationCreated', [annotation]);
+        $('.annotator-error').remove();
+        annotation.error = false;
+
+        annotation.new_layer_list = []
+	      $.each($('.annotator-h2o_layer'), function(i, el) {
+	        var input = $(el).find('input[name=new_layer]');
+	        var hex = $(el).find('.hexes .active');
+	        if(input.val() != '' && hex.size() > 0) {
+	          annotation.new_layer_list.push({ layer: input.val(), hex: hex.data('value') });
+	        } else {
+	          annotation.error = true;
+	        }
+	      });
+        console.log(annotation.new_layer_list);
+
+	      if(annotation.error) {
+	        var error_node = $('<li>').addClass('annotator-item annotator-error').html('You must add a layer name and select a color for each new layer');
+	        error_node.insertBefore($('.annotator-h2o_layer:first'));
+          //Steph TODO: Figure out how to deal with this, keep editor open
+          throw "Annotator error - hex / layer missing";
+	      } else {
+          cleanup();
+          $(annotation.highlights).removeClass('annotator-hl-temporary');
+          return _this.publish('annotationCreated', [annotation]);
+        }
       };
       cancel = function() {
         cleanup();
         return _this.deleteAnnotation(annotation);
       };
       cleanup = function() {
+        $('.annotator-editor,.annotator-h2o_layer').remove();
         _this.unsubscribe('annotationEditorHidden', cancel);
         return _this.unsubscribe('annotationEditorSubmit', save);
       };
@@ -1208,7 +1238,6 @@
   }
 
   if (g.getSelection == null) {
-  console.log('getting script ierange');
     $.getScript('ierange.min.js');
   }
 
@@ -1432,6 +1461,8 @@
           break;
         case 'select':
           input = $('<select />');
+        case 'h2o_layer_button':
+          input = $('<a href="#">Add New Layer</a>');
       }
       element.append(input);
       input.attr({
@@ -1443,6 +1474,9 @@
           "for": field.id,
           html: field.label
         }));
+      }
+      if(field.type == 'h2o_layer_button') {
+        element.addClass('annotator-h2o_layer_button');
       }
       this.element.find('ul:first').append(element);
       this.fields.push(field);
@@ -2077,17 +2111,17 @@
     };
 
     Store.prototype.annotationCreated = function(annotation) {
+      annotation.collage_id = jQuery.getItemId();
+
       var _this = this;
       if (__indexOf.call(this.annotations, annotation) < 0) {
         this.registerAnnotation(annotation);
         return this._apiRequest('create', annotation, function(data) {
-          //TODO: Remove later steph
-          data = $.parseJSON(data);
+        console.log(data);
           if (data.id == null) {
             console.warn(Annotator._t("Warning: No ID returned from server for annotation "), annotation);
           }
 
-          //TODO: steph move this out of code?
           $('.annotation-noid').addClass('annotation-' + data.id).removeClass('annotation-noid').data('layered', data.id);
           $('.layered-border-start-noid').removeClass('layered-border-start-noid').addClass('layered-border-start-' + data.id).data('layered', data.id);
           $('.layered-border-end-noid').removeClass('layered-border-end-noid').addClass('layered-border-end-' + data.id).data('layered', data.id);
@@ -2133,7 +2167,6 @@
     };
 
     Store.prototype.updateAnnotation = function(annotation, data) {
-    console.log('inside store');
       if (__indexOf.call(this.annotations, annotation) < 0) {
         console.error(Annotator._t("Trying to update unregistered annotation!"));
       } else {
@@ -2143,7 +2176,6 @@
     };
 
     Store.prototype.loadAnnotations = function() {
-    console.log('here 123');
       return this._apiRequest('read', null, this._onLoadAnnotations);
     };
     Store.prototype.loadAnnotationsH2O = function() {

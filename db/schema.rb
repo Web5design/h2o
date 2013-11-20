@@ -163,7 +163,7 @@ ActiveRecord::Schema.define(:version => 20131114202505) do
     t.integer  "karma"
     t.integer  "pushed_from_id"
     t.integer  "user_id",                              :default => 0,    :null => false
-    t.integer  "annotator_version",                    :default => 1,    :null => false
+    t.integer  "annotator_version",                    :default => 2,    :null => false
   end
 
   add_index "collages", ["active"], :name => "index_collages_on_active"

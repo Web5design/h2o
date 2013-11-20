@@ -48,7 +48,6 @@ class AnnotationsController < BaseController
       map = @annotation.collage.color_mappings.detect { |cm| cm.tag_id == layer.id }
       @color_map[layer.name] = map.hex if map
     end
-    @editors = @annotation.editors
 
     @required_layer = @annotation.collage.layers.detect { |l| l.name.downcase == "required" }
     @other_layers = @required_layer.present? ? @annotation.collage.layers.select { |t| t.id != @required_layer.id } : @annotation.collage.layers
@@ -87,22 +86,33 @@ class AnnotationsController < BaseController
     end
   end
 
-  # POST /annotations
-  # POST /annotations.xml
   def create
-    filter_layer_list
+    if !params.has_key?(:annotation)
+      range = params[:ranges].first
+      params[:annotation] = {
+        :annotation_start => 0,
+        :annotation_end => 0,
+        :collage_id => params[:collage_id],
+        :xpath_start => range[:start],
+        :xpath_end => range[:end],
+        :start_offset => range[:startOffset],
+        :end_offset => range[:endOffset],
+        :annotation => params[:text] 
+      }
+      filter_layer_list_v2
+    else
+      filter_layer_list
+    end
 
     @annotation = Annotation.new(params[:annotation])
     @annotation.user = current_user
-
-    if params.has_key?(:new_layer_list) && (params[:new_layer_list].first[:hex] == "" || params[:new_layer_list].first[:layer] == "")
+   
+    if params.has_key?(:new_layer_list) && params[:new_layer_list].any? && (params[:new_layer_list].first[:hex] == "" || params[:new_layer_list].first[:layer] == "")
       render :text => "Please enter a layer name and select a hex.", :status => :unprocessable_entity
       return
     end
 
     if @annotation.save
-      @annotation.accepts_role!(:editor, current_user)
-
       create_color_mappings
 
       color_map = {}
@@ -111,7 +121,7 @@ class AnnotationsController < BaseController
         color_map[layer.id] = map.hex if map
       end
 
-      render :json => { :annotation => @annotation.to_json(:include => [:layers]), :color_map => color_map.to_json, :type => "create" }
+      render :json => { :id => @annotation.id, :annotation => @annotation.to_json(:include => [:layers]), :color_map => color_map.to_json, :type => "create" }
     else
       render :text => "We couldn't add that annotation. Sorry!<br/>#{@annotation.errors.full_messages.join('<br/>')}", :status => :unprocessable_entity
     end
@@ -126,8 +136,6 @@ class AnnotationsController < BaseController
 
     @annotation.attributes = params[:annotation]
     if @annotation.save
-      @annotation.accepts_role!(:editor,current_user)
-
       #Destroys color mappings for deleted layers that are deletable
       @annotation.reload
       updated_layers = @annotation.layers
@@ -183,6 +191,21 @@ class AnnotationsController < BaseController
     if params.has_key?(:existing_layer_list)
       layer_list << params[:existing_layer_list]
     end
+    params[:annotation][:layer_list] = layer_list.join(', ')
+  end
+
+  def filter_layer_list_v2
+    layer_list = []
+    params[:category].each do |layer|
+      layer_list << layer.gsub(/^layer-/, '').downcase
+    end
+    if params.has_key?(:new_layer_list)
+      params[:new_layer_list].each do |new_layer|
+        new_layer["layer"].downcase!
+      end
+      layer_list << params[:new_layer_list].map { |c| c["layer"] }
+    end
+
     params[:annotation][:layer_list] = layer_list.join(', ')
   end
 

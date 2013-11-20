@@ -21,14 +21,16 @@ Annotator.Plugin.H2O = (function() {
 
   H2O.prototype.pluginInit = function() {
     this.annotator.subscribe("annotationCreated", function(annotation) {
+      console.log(annotation);
       H2O.prototype.setHighlights(annotation);
       H2O.prototype.setUnlayeredSingle(annotation);
       H2O.prototype.setLayeredBorders([annotation]);
-      //rehighlight();
+      jQuery.rehighlight();
     });
     this.annotator.subscribe("annotationsLoaded", function(annotations) {
       H2O.prototype.setUnlayeredAll();
       H2O.prototype.setLayeredBorders(annotations);
+      jQuery.rehighlight();
     });
     this.annotator.subscribe("beforeAnnotationDeleted", function(annotation) {
       H2O.prototype.beforeDestroyAnnotationMarkup(annotation);
@@ -38,7 +40,6 @@ Annotator.Plugin.H2O = (function() {
       H2O.prototype.resetUnlayeredListeners();
     });
     this.annotator.subscribe("annotationUpdated", function(annotation) {
-      console.log('inside annotation Updated');
       H2O.prototype.updateAnnotationMarkup(annotation);
     });
 
@@ -57,6 +58,13 @@ Annotator.Plugin.H2O = (function() {
         submit: this.setAnnotationCat
       });
     }
+    this.annotator.editor.addField({
+      id: 'add_new_layer',
+      type: 'h2o_layer_button',
+      label: 'New Layer',
+      load: this.updateField,
+      submit: this.setAnnotationCat
+    });
     this.viewer = this.annotator.viewer.addField({
       load: this.updateViewer
     });
@@ -318,7 +326,6 @@ Annotator.Plugin.H2O = (function() {
   };
 
   H2O.prototype.setUnlayeredAll = function() {
-  console.log('steph inside here');
     $('.annotator-wrapper *:not(.annotator-hl):not(:has(.annotator-hl))').addClass('unlayered');
     $.each($('.annotator-wrapper *:not(.annotator-hl):has(.annotator-hl)'), function(i, el) {
       if($(el).children(':not(.annotator-hl):has(.annotator-hl)').size() == 0) {
@@ -431,7 +438,9 @@ Annotator.Plugin.H2O = (function() {
         var string;
         return string = $.map(annotation.category, function(cat) {
           var layer_name = cat.replace(/layer-/, '');
-          return '<span class="' + cat + '">' + layer_name + '</span>';
+          var hex = layer_data[layer_name];
+          var color_combine = jQuery.xcolor.opacity('#FFFFFF', hex, 0.4);
+          return '<span style="background-color:' + color_combine.getHex() + ';">' + layer_name + '</span>';
         }).join('');
       });
     } else {

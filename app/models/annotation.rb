@@ -9,9 +9,6 @@ class Annotation < ActiveRecord::Base
   acts_as_taggable_on :layers
   acts_as_authorization_object
 
-  before_create :create_annotation_caches
-  before_save :create_annotation_word_count_cache
-
   belongs_to :collage
   belongs_to :user
 
@@ -31,14 +28,6 @@ class Annotation < ActiveRecord::Base
   alias :name :display_name
   alias :to_s :display_name
 
-  def annotation_start_numeral
-    self.annotation_start[1,self.annotation_start.length - 1]
-  end
-
-  def annotation_end_numeral
-    self.annotation_end[1,self.annotation_end.length - 1]
-  end
-
   def annotated_nodes(doc = Nokogiri::HTML.parse(self.collage.content))
     doc.xpath("//tt[starts-with(@id,'t') and substring-after(@id,'t')>='" + self.annotation_start_numeral + "' and substring-after(@id,'t')<='" + self.annotation_end_numeral + "']")
   end
@@ -46,30 +35,4 @@ class Annotation < ActiveRecord::Base
   def tags
     self.layers
   end
-
-  private
-
-  def create_annotation_word_count_cache
-    self.annotation_word_count = (self.annotation.blank?) ? 0 : self.annotation.split(/\s+/).length
-  end
-
-  def create_annotation_caches
-    # No need to recreate these caches on a cloned node.
-    if self.annotated_content.blank?
-
-      # Fix annotation start/stop order.
-      nodes = [self.annotation_start_numeral.to_i, self.annotation_end_numeral.to_i].sort.collect{|n| "t#{n}"}
-      self.annotation_start = nodes[0]
-      self.annotation_end = nodes[1]
-
-      output = ''
-      anodes = self.annotated_nodes
-      anodes.each do |item|
-        output += "#{item.inner_html} "
-      end
-      self.annotated_content = output
-      self.word_count = anodes.length
-    end
-  end
-
 end

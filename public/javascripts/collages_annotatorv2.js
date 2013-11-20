@@ -50,7 +50,6 @@ jQuery.extend({
 	  for(var i = 0; i<total_selectors.length; i++) {
 	    updated[total_selectors[i]] = 0;
 	  }
-	  var elements = [];
 	  for(var i = 0; i<total_selectors.length; i++) {
 	    var selector = total_selectors[i];
 	    if(updated[selector] == 0) {
@@ -84,7 +83,11 @@ jQuery.extend({
 	  jQuery.each(updated, function(key, value) {
 	    keys_arr.push(key);
 	  });
-	  jQuery('.annotator-hl:not(' + keys_arr.join(',') + ')').addClass('layered-empty');
+    if(keys_arr.length > 0) {
+	    jQuery('.annotator-hl:not(' + keys_arr.join(',') + ')').addClass('layered-empty');
+    } else {
+      jQuery('.annotator-hl').addClass('layered-empty');
+    }
   },
   observeDeleteInheritedAnnotations: function () {
     jQuery('#delete_inherited_annotations').live('click', function(e) {
@@ -241,10 +244,10 @@ jQuery.extend({
       return false;
     });
     jQuery('#add_new_layer').live('click', function() {
-      var new_layer = jQuery('<div class="new_layer"><p>Enter Layer Name <input type="text" name="new_layer_list[][layer]" /></p><p class="hex_input">Choose a Color<input type="hidden" name="new_layer_list[][hex]" /></p><a href="#" class="remove_layer">Cancel &raquo;</a></div>');
+      var new_layer = jQuery('<li class="annotator-item annotator-h2o_layer"><p>Enter Layer Name <input type="text" name="new_layer" /></p><p class="hex_input">Choose a Color<input type="hidden" name="new_layer_list[][hex]" /></p><a href="#" class="remove_layer">Cancel &raquo;</a></div>');
       var hexes = jQuery.getHexes();
       hexes.insertBefore(new_layer.find('.remove_layer'));
-      jQuery('#new_layers').append(new_layer);
+      new_layer.insertBefore($('.annotator-h2o_layer_button'));
       return false;
     });
     jQuery('.remove_layer').live('click', function() {
@@ -863,7 +866,7 @@ jQuery(document).ready(function(){
     jQuery.showGlobalSpinnerNode();
 
     var b = jQuery('div.article').annotator().annotator('addPlugin', 'H2O', layer_data).annotator('addPlugin', 'Store', {
-      prefix: '',
+      prefix: '/annotations',
       urls: {
         create: '/create',
         read: '/annotations/:id',
@@ -874,6 +877,7 @@ jQuery(document).ready(function(){
     });
     jQuery('.toolbar, #buttons').css('visibility', 'visible');
     jQuery.observeToolListeners();
+    jQuery.observeLayerColorMapping();
 
     /*
     //TODO: Possibly move this before annotator
@@ -883,7 +887,6 @@ jQuery(document).ready(function(){
     });
 
     jQuery.observePrintListeners();
-    jQuery.observeLayerColorMapping();
     jQuery.observeHeatmap();
     jQuery.observeAnnotationEditListeners();
   

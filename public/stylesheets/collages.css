@@ -169,6 +169,7 @@
 .paragraph-numbering { position: absolute; left: 30px; color: #369; text-decoration: none; font-weight: normal; font-size: 13px; }
 
 #collage .article .layered-ellipsis { display: none; }
+#collage .article .layered-empty { background-color: #FEFED9; }
 
 /* MarkItUp */
 /*

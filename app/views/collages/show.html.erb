@@ -10,7 +10,7 @@
 
 <aside id="singleitem_barcode_toolbar">
   <%= render :partial => "shared/barcode", :locals => { :object => @collage } %>
-  <a href="#" id="heatmap_toggle" title="Show Heatmap" class="link-heatmap tooltip<%= ' inactive' if @collage.annotations.inject(0) { |s, a| s + a.annotation_word_count } == 0 %>"><span class="icon icon-heatmap"><span>Show/Hide Heatmap</span></span></a>
+  <a href="#" id="heatmap_toggle" title="Show Heatmap" class="link-heatmap tooltip<%= ' inactive' if @collage.annotations.inject(0) { |s, a| s + a.annotation_word_count.to_i } == 0 %>"><span class="icon icon-heatmap"><span>Show/Hide Heatmap</span></span></a>
   <a href="<%= copy_collage_path(@collage) %>" class="tooltip remix-action requires_logged_in" id="copy-collage" title="Remix <%= @collage.name %>" data-type="collage" data-title="<%= @collage.name %>">
     <span class="icon icon-remix-large"><span>Remix Collage</span></span>
   </a>
@@ -63,10 +63,10 @@
         <h5>ANNOTATIONS</h5>
         <ul>
           <li id="show_annotations">
-            <a href="#" title="View all annotations" class="tooltip" <%= raw 'class="inactive"' if @collage.annotations.inject(0) { |s, a| s + a.annotation_word_count } == 0 %>>SHOW ALL ANNOTATIONS</a>
+            <a href="#" title="View all annotations" class="tooltip" <%= raw 'class="inactive"' if @collage.annotations.inject(0) { |s, a| s + a.annotation_word_count.to_i } == 0 %>>SHOW ALL ANNOTATIONS</a>
           </li>
           <li id="hide_annotations">
-            <a href="#" title="Hide all annotations" class="tooltip" <%= raw 'class="inactive"' if @collage.annotations.inject(0) { |s, a| s + a.annotation_word_count } == 0 %>>CONTRACT ALL ANNOTATIONS</a>
+            <a href="#" title="Hide all annotations" class="tooltip" <%= raw 'class="inactive"' if @collage.annotations.inject(0) { |s, a| s + a.annotation_word_count.to_i } == 0 %>>CONTRACT ALL ANNOTATIONS</a>
           </li>
         </ul>
         <% end -%>
