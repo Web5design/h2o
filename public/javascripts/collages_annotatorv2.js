@@ -101,6 +101,8 @@ jQuery.extend({
           jQuery.showGlobalSpinnerNode();
         },
         success: function(data){
+          //console.log('reload page here instead');
+          /* 
           jQuery('.unlayered-ellipsis:visible').click();
           jQuery('#collage div.article').removeClass('hide_unlayered').addClass('show_unlayered');
           jQuery.hideShowUnlayeredOptions();
@@ -110,6 +112,7 @@ jQuery.extend({
           });
           jQuery('#inherited_h,#inherited_span').remove();
           jQuery('.unlayered-control').hide();
+          */
           jQuery.hideGlobalSpinnerNode();
         },
         error: function() {
@@ -325,7 +328,6 @@ jQuery.extend({
   hideShowUnlayeredOptions: function() {
     var total = jQuery('.unlayered-ellipsis').size();
     var shown = jQuery('.unlayered-ellipsis').filter(':visible').size();
-    console.log(shown + ' are shown out of ' + total);
     if(total == shown) {
       jQuery('#hide_unlayered').hide();
       jQuery('#show_unlayered').show();
@@ -442,13 +444,13 @@ jQuery.extend({
         
       var text_node = $(($(this).contents())[0]);
       var new_node;
-      if($(this).data('highlight') == true) {
+      if($(this).data('highlight') === undefined || $(this).data('highlight') == false) {
         $('span.layer-' + layer).addClass('highlight-' + layer);
-        $(this).data('highlight', false);
+        $(this).data('highlight', true);
         new_node = document.createTextNode('UNHIGHLIGHT "' + layer + '"');
       } else {
         $('span.layer-' + layer).removeClass('highlight-' + layer);
-        $(this).data('highlight', true);
+        $(this).data('highlight', false);
         new_node = document.createTextNode('HIGHLIGHT "' + layer + '"');
       }
       text_node.replaceWith(new_node);
@@ -672,115 +674,6 @@ jQuery.extend({
       jQuery('#collage div.article').removeClass('edit_mode');
     }
   },
-  observeAnnotationEditListeners: function() {
-    jQuery('#edit_item .tabs a:not(.current)').live('click', function(e) {
-      e.preventDefault();
-      var tabs_table = jQuery(this).parentsUntil('table').parent().first();
-      tabs_table.find('.current').removeClass('current');
-      jQuery(this).addClass('current');
-      tabs_table.siblings('.tab_panel').hide();
-      jQuery('#edit_item div.' + jQuery(this).attr('id')).show();
-    });
-    jQuery('#edit_item .tabs a.current').live('click', function(e) {
-      e.preventDefault();
-    });
-    jQuery('#annotation_submit').live('click', function(e) {
-      e.preventDefault();
-      jQuery.submitAnnotation();
-    });
-    jQuery('#cancel_new_annotation').live('click', function() {
-      jQuery('#edit_item .dynamic').hide().html('');
-      jQuery('#link_edit #search_wrapper_outer').hide();
-    });
-    jQuery('#delete_annotation').live('click', function(e) {
-      e.preventDefault();
-      var annotationId = jQuery(this).data('id');
-      if(confirm('Are you sure?')){
-        jQuery.ajax({
-          cache: false,
-          type: 'POST',
-          data: {
-            '_method': 'delete'
-          },
-          url: jQuery.rootPath() + 'annotations/destroy/' + annotationId,
-          beforeSend: function(){
-            jQuery.showGlobalSpinnerNode();
-          },
-          error: function(xhr){
-            jQuery.hideGlobalSpinnerNode();
-          },
-          success: function(response){
-            jQuery.deleteAnnotationMarkup(clean_annotations["a" + annotationId]);
-            jQuery('#edit_item #annotation_edit .dynamic').hide().html('');
-            jQuery('#edit_item').append(jQuery('<div>').attr('id', 'status_message').html('Annotation Deleted'));
-            jQuery.hideGlobalSpinnerNode();
-          }
-        });
-      }
-    });
-    jQuery('#edit_annotation').live('click', function(e) {
-      e.preventDefault();
-      jQuery.ajax({
-        type: 'GET',
-        cache: false,
-        url: jQuery.rootPath() + 'annotations/edit/' + jQuery(this).data('id'),
-        beforeSend: function(){
-          jQuery.showGlobalSpinnerNode();
-          //jQuery('#new-annotation-error').html('').hide();
-        },
-        error: function(xhr){
-          jQuery.hideGlobalSpinnerNode();
-          //jQuery('#new-annotation-error').show().append(xhr.responseText);
-        },
-        success: function(html){
-          jQuery.hideGlobalSpinnerNode();
-          jQuery('<div>').attr('id', 'annotation_edit').html(html).appendTo(jQuery('#edit_item'));
-          var filtered = jQuery('#annotation_annotation').val().replace(/&quot;/g, '"');
-          jQuery('#annotation_annotation').val(filtered);
-          jQuery("#annotation_annotation").markItUp(h2oTextileSettings);
-        }
-      });
-    });
-
-    jQuery('.control-divider').live('click', function(e) {
-      e.preventDefault();
-      if(jQuery('#edit_toggle').length && jQuery('#edit_toggle').hasClass('edit_mode')) {
-        jQuery.annotationButton(jQuery(this).data('id'));
-      }
-    });
-    jQuery('.annotation-asterisk').live('click', function(e) {
-      e.preventDefault();
-      var annotation_id = jQuery(this).data('id');
-      jQuery.toggleAnnotation(annotation_id);
-      if(jQuery('#edit_toggle').length && jQuery('#edit_toggle').hasClass('edit_mode')) {
-        if(!jQuery('#delete_annotation').length || jQuery('#delete_annotation').data('id') != annotation_id) {
-          jQuery.annotationButton(annotation_id);
-        }
-      }
-    });
-  },
-  openAnnotationForm: function(url_path, data){
-    jQuery.ajax({
-        type: 'GET',
-        url: jQuery.rootPath() + url_path,
-        data: data, 
-        cache: false,
-        beforeSend: function(){
-          jQuery.showGlobalSpinnerNode();
-          jQuery('div.ajax-error').html('').hide();
-        },
-        success: function(html){
-          jQuery.hideGlobalSpinnerNode();
-          jQuery('#edit_item #status_message').remove();
-          jQuery('#annotation_edit .dynamic').css('padding', '10px').html(html).show();
-          //jQuery('<div>').attr('id', 'annotation_edit').addClass('tab_panel new_annotation').html(html).appendTo(jQuery('#edit_item'));
-        },
-        error: function(xhr){
-          jQuery.hideGlobalSpinnerNode();
-          jQuery('div.ajax-error').show().append(xhr.responseText);
-        }
-      });
-  }, //end anntotation dialog
 
   initPlaylistItemAddButton: function(){
     jQuery('.add-collage-button').live('click', function(e) {
@@ -870,8 +763,8 @@ jQuery(document).ready(function(){
       urls: {
         create: '/create',
         read: '/annotations/:id',
-        update: '/annotations/:id',
-        destroy: '/annotations/:id',
+        update: '/:id',
+        destroy: '/:id',
         search: '/search'
       }
     });
@@ -888,7 +781,6 @@ jQuery(document).ready(function(){
 
     jQuery.observePrintListeners();
     jQuery.observeHeatmap();
-    jQuery.observeAnnotationEditListeners();
   
     jQuery.observeStatsListener();
     jQuery.observeViewerToggleEdit();

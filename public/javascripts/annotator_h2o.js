@@ -20,8 +20,8 @@ Annotator.Plugin.H2O = (function() {
   }
 
   H2O.prototype.pluginInit = function() {
+    var h2o_annotator = this;
     this.annotator.subscribe("annotationCreated", function(annotation) {
-      console.log(annotation);
       H2O.prototype.setHighlights(annotation);
       H2O.prototype.setUnlayeredSingle(annotation);
       H2O.prototype.setLayeredBorders([annotation]);
@@ -38,8 +38,20 @@ Annotator.Plugin.H2O = (function() {
     this.annotator.subscribe("annotationDeleted", function(annotation) {
       H2O.prototype.destroyAnnotationMarkup(annotation);
       H2O.prototype.resetUnlayeredListeners();
+      H2O.prototype.manageLayerCleanup(h2o_annotator.annotator, annotation, false);
     });
     this.annotator.subscribe("annotationUpdated", function(annotation) {
+      annotation.new_layer_list = [];
+      $.each($('.annotator-h2o_layer'), function(i, el) {
+        var input = $(el).find('input[name=new_layer]');
+        var hex = $(el).find('.hexes .active');
+        if(input.val() != '' && hex.size() > 0) {
+          annotation.new_layer_list.push({ layer: input.val(), hex: hex.data('value') });
+        } else {
+          annotation.error = true;
+        }
+      });
+      $('.annotator-h2o_layer').remove();
       H2O.prototype.updateAnnotationMarkup(annotation);
     });
 
@@ -54,15 +66,13 @@ Annotator.Plugin.H2O = (function() {
         value: cat,
         hl: color,
         checked: false,
-        load: this.updateField,
-        submit: this.setAnnotationCat
+        load: this.updateField
       });
     }
     this.annotator.editor.addField({
       id: 'add_new_layer',
       type: 'h2o_layer_button',
       label: 'New Layer',
-      load: this.updateField,
       submit: this.setAnnotationCat
     });
     this.viewer = this.annotator.viewer.addField({
@@ -82,6 +92,78 @@ Annotator.Plugin.H2O = (function() {
   H2O.prototype.setViewer = function(viewer, annotations) {
     var v;
     return v = viewer;
+  };
+
+  H2O.prototype.updateMarkupNoid = function(annotation_id) {
+    $('.annotation-noid').addClass('annotation-' + annotation_id).removeClass('annotation-noid').data('layered', annotation_id);
+    $('.layered-border-start-noid').removeClass('layered-border-start-noid').addClass('layered-border-start-' + annotation_id).data('layered', annotation_id);
+    $('.layered-border-end-noid').removeClass('layered-border-end-noid').addClass('layered-border-end-' + annotation_id).data('layered', annotation_id);
+    $('.layered-ellipsis-noid').removeClass('layered-ellipsis-noid').addClass('layered-ellipsis-' + annotation_id).data('layered', annotation_id);
+  };
+
+  H2O.prototype.manageLayerCleanup = function(_annotator, annotation, check_for_new) {
+    $.each($('#layers_highlights li'), function(i, el) {
+      if($(el).data('name') == 'required') {
+        next;
+      }
+      if($('span.layer-' + $(el).data('name')).size() == 0) {
+        var found = false;
+        if(check_for_new) {
+          $.each(annotation.new_layer_list, function(j, new_layer) {
+            if($(el).data('name') == new_layer.layer) {
+              found = true;
+            }
+          });
+        }
+        if(!found) {
+          $(el).remove(); 
+          var updated_fields = new Array();
+          for(var _j = 0; _j < _annotator.editor.fields.length; _j++) {
+            if(_annotator.editor.fields[_j].id != 'layer-' + $(el).data('name')) {
+              updated_fields.push(_annotator.editor.fields[_j]);
+            }
+          }
+          _annotator.editor.fields = updated_fields;
+          _annotator.editor.element.find('input#layer-' + $(el).data('name')).parent().remove();
+        }
+      }
+    });
+  };
+
+  H2O.prototype.manageNewLayers = function(annotation, data) {
+    var _this = this;
+
+    if(annotation.new_layer_list.length > 0) {
+      _this.annotator.editor.element.find('.annotator-h2o_layer_button').remove();
+      _this.annotator.editor.fields.pop();
+      $.each(annotation.new_layer_list, function(i, el) {
+        layer_data[el.layer] = el.hex;
+	      _this.annotator.editor.addField({
+	        id: 'layer-' + el.layer,
+	        type: 'checkbox',
+	        label: el.layer,
+	        value: el.layer,
+	        hl: el.hex,
+	        checked: false,
+	        load: _this.updateField
+	      });
+        $.each(JSON.parse(data.color_map), function(j, cm) {
+          if(cm == el.hex) {
+            el.id = j;
+          }
+        });
+        var li_node = $('<li>').data('hex', el.hex).data('name', el.layer).data('id', 'l' + el.id);
+        var link_text = 'HIGHLIGHT "' + el.layer + '" <span class="indicator" style="background-color:#' + el.hex + ';"></span>';
+        li_node.append($('<a>').attr('class', 'l' + el.id + ' tooltip link-o').attr('href', '#').attr('original-title', 'Highlight the ' + el.layer + ' layer').html(link_text));
+        $('#layers_highlights').append(li_node);
+      });
+      _this.annotator.editor.addField({
+        id: 'add_new_layer',
+        type: 'h2o_layer_button',
+        label: 'New Layer',
+        submit: _this.setAnnotationCat
+      });
+    }
   };
 
   H2O.prototype.updateAnnotationMarkup = function(annotation) {
@@ -222,6 +304,7 @@ Annotator.Plugin.H2O = (function() {
       $('.unlayered-ellipsis-' + shifted_unlayered + ':last').remove();
     }
   };
+
   H2O.prototype.setLayeredBorders = function(annotations) {
     for(var _i=0; _i<annotations.length; _i++) {
       var _id = annotations[_i].id;
@@ -388,15 +471,17 @@ Annotator.Plugin.H2O = (function() {
   };
 
   H2O.prototype.setHighlights = function(annotation) {
-    var cat, h, highlights, _i, _len, _results;
-    cat = annotation.category;
+    var h, highlights, _i, _len, _results;
     highlights = annotation.highlights;
     _results = [];
     for (_i = 0; _i < highlights.length; _i++) {
       h = highlights[_i];
       _results.push(h.className = h.className + ' annotation-noid');
-      for(_c = 0; _c < cat.length; _c++) {
-        _results.push(h.className = h.className + ' ' + cat[_c]);
+      for(_c = 0; _c < annotation.category.length; _c++) {
+        _results.push(h.className = h.className + ' ' + annotation.category[_c]);
+      }
+      for(_c = 0; _c < annotation.new_layer_list.length; _c++) {
+        _results.push(h.className = h.className + ' layer-' + annotation.new_layer_list[_c].layer);
       }
       $.each($('a.highlight_layer'), function(_i, el) {
         if($(el).data('highlight') && h.className.match('layer-' + $(el).data('layer'))) {
@@ -421,13 +506,11 @@ Annotator.Plugin.H2O = (function() {
     if(annotation.category === undefined) {
       annotation.category = [];
     }
-
-    var pos = $.inArray(field.childNodes[0].id, annotation.category); 
-    if (field.childNodes[0].checked && pos == -1) {
-      annotation.category.push(field.childNodes[0].id);
-    } else if(!field.childNodes[0].checked && pos != -1) {
-      annotation.category.splice( pos, 1);
-    }
+    $.each(this.annotator.editor.fields, function(_i, _field) {
+      if($('input#' + _field.id).attr('checked') == 'checked') {
+        annotation.category.push(_field.id);
+      }
+    });
     return;
   };
 

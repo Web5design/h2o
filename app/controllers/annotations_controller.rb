@@ -127,10 +127,16 @@ class AnnotationsController < BaseController
     end
   end
 
-  # PUT /annotations/1
-  # PUT /annotations/1.xml
   def update
-    filter_layer_list
+    if @annotation.collage.annotator_version == 2
+      range = params[:ranges].first
+      params[:annotation] = {
+        :annotation => params[:text] 
+      }
+      filter_layer_list_v2
+    else
+      filter_layer_list
+    end
 
     current_layers = @annotation.layers
 
@@ -196,8 +202,10 @@ class AnnotationsController < BaseController
 
   def filter_layer_list_v2
     layer_list = []
-    params[:category].each do |layer|
-      layer_list << layer.gsub(/^layer-/, '').downcase
+    if params.has_key?(:category)
+      params[:category].each do |layer|
+        layer_list << layer.gsub(/^layer-/, '').downcase
+      end
     end
     if params.has_key?(:new_layer_list)
       params[:new_layer_list].each do |new_layer|

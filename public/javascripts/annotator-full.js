@@ -934,6 +934,7 @@
     };
 
     Annotator.prototype.updateAnnotation = function(annotation) {
+      console.log('inside update annotation');
       this.publish('beforeAnnotationUpdated', [annotation]);
       this.publish('annotationUpdated', [annotation]);
       return annotation;
@@ -1141,7 +1142,6 @@
     Annotator.prototype.onAdderClick = function(event) {
       var annotation, cancel, cleanup, position, save,
         _this = this;
-        console.log(this);
       if (event != null) {
         event.preventDefault();
       }
@@ -1164,7 +1164,6 @@
 	          annotation.error = true;
 	        }
 	      });
-        console.log(annotation.new_layer_list);
 
 	      if(annotation.error) {
 	        var error_node = $('<li>').addClass('annotator-item annotator-error').html('You must add a layer name and select a color for each new layer');
@@ -1182,7 +1181,7 @@
         return _this.deleteAnnotation(annotation);
       };
       cleanup = function() {
-        $('.annotator-editor,.annotator-h2o_layer').remove();
+        $('.annotator-h2o_layer').remove();
         _this.unsubscribe('annotationEditorHidden', cancel);
         return _this.unsubscribe('annotationEditorSubmit', save);
       };
@@ -1450,6 +1449,7 @@
       input = null;
       element = $('<li class="annotator-item" />');
       field.element = element[0];
+
       switch (field.type) {
         case 'textarea':
           input = $('<textarea />');
@@ -1468,6 +1468,7 @@
       input.attr({
         id: field.id
       });
+
       if (field.type === 'checkbox') {
         element.addClass('annotator-checkbox');
         element.append($('<label />', {
@@ -1478,6 +1479,7 @@
       if(field.type == 'h2o_layer_button') {
         element.addClass('annotator-h2o_layer_button');
       }
+      
       this.element.find('ul:first').append(element);
       this.fields.push(field);
       return field.element;
@@ -2117,15 +2119,12 @@
       if (__indexOf.call(this.annotations, annotation) < 0) {
         this.registerAnnotation(annotation);
         return this._apiRequest('create', annotation, function(data) {
-        console.log(data);
           if (data.id == null) {
             console.warn(Annotator._t("Warning: No ID returned from server for annotation "), annotation);
           }
 
-          $('.annotation-noid').addClass('annotation-' + data.id).removeClass('annotation-noid').data('layered', data.id);
-          $('.layered-border-start-noid').removeClass('layered-border-start-noid').addClass('layered-border-start-' + data.id).data('layered', data.id);
-          $('.layered-border-end-noid').removeClass('layered-border-end-noid').addClass('layered-border-end-' + data.id).data('layered', data.id);
-          $('.layered-ellipsis-noid').removeClass('layered-ellipsis-noid').addClass('layered-ellipsis-' + data.id).data('layered', data.id);
+          _this.annotator.plugins.H2O.updateMarkupNoid(data.id);
+
           return _this.updateAnnotation(annotation, data);
         });
       } else {
@@ -2136,11 +2135,10 @@
     Store.prototype.annotationUpdated = function(annotation) {
       var _this = this;
       if (__indexOf.call(this.annotations, annotation) >= 0) {
-        //TODO: steph reenable this
-        //return this._apiRequest('update', annotation, (function(data) {
-          //return _this.updateAnnotation(annotation, data);
+        return this._apiRequest('update', annotation, (function(data) {
+          return _this.updateAnnotation(annotation, data);
           return _this.updateAnnotation(annotation, annotation);
-        //}));
+        }));
       }
     };
 
@@ -2151,10 +2149,9 @@
     Store.prototype.annotationDeleted = function(annotation) {
       var _this = this;
       if (__indexOf.call(this.annotations, annotation) >= 0) {
-        //TODO: steph enable this later
-        //return this._apiRequest('destroy', annotation, (function() {
+        return this._apiRequest('destroy', annotation, (function() {
           return _this.unregisterAnnotation(annotation);
-        //}));
+        }));
       }
     };
 
@@ -2167,6 +2164,9 @@
     };
 
     Store.prototype.updateAnnotation = function(annotation, data) {
+      this.annotator.plugins.H2O.manageNewLayers(annotation, data);
+      this.annotator.plugins.H2O.manageLayerCleanup(this.annotator, annotation, true);
+
       if (__indexOf.call(this.annotations, annotation) < 0) {
         console.error(Annotator._t("Trying to update unregistered annotation!"));
       } else {
