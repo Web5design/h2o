@@ -516,18 +516,19 @@ Annotator.Plugin.H2O = (function() {
 
   H2O.prototype.updateViewer = function(field, annotation) {
     field = $(field);
-    if (annotation.category != null) {
-      return field.addClass('annotator-category').html(function() {
-        var string;
-        return string = $.map(annotation.category, function(cat) {
-          var layer_name = cat.replace(/layer-/, '');
-          var hex = layer_data[layer_name];
-          var color_combine = jQuery.xcolor.opacity('#FFFFFF', hex, 0.4);
-          return '<span style="background-color:' + color_combine.getHex() + ';">' + layer_name + '</span>';
-        }).join('');
-      });
-    } else {
-      return field.remove();
+    field.addClass('annotator-category');
+    for(_c = 0; _c < annotation.category.length; _c++) {
+      var layer_name = annotation.category[_c].replace(/layer-/, '');
+      var hex = layer_data[layer_name];
+      var color_combine = jQuery.xcolor.opacity('#FFFFFF', hex, 0.4);
+      field.append($('<span>').attr('style', 'background-color:' + color_combine.getHex()).html(layer_name));
+    }
+    if(annotation.new_layer_list !== undefined) {
+      for(_c = 0; _c < annotation.new_layer_list.length; _c++) {
+        var layer = annotation.new_layer_list[_c];
+        var color_combine = jQuery.xcolor.opacity('#FFFFFF', layer.hex, 0.4);
+        field.append($('<span>').attr('style', 'background-color:' + color_combine.getHex()).html(layer.layer));
+      }
     }
   };
 
