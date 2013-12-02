@@ -582,6 +582,9 @@ jQuery.extend({
       if(jQuery('body').hasClass('bplaylists_show')) {
         jQuery.playlist_mark_private('', false);
       }
+      if(jQuery('body').hasClass('bcollages_show')) {
+        jQuery.initiate_annotator(false);
+      }
       return;
     } else {
       if(eval(jQuery.cookie('anonymous_user'))) {

@@ -660,13 +660,27 @@ jQuery.extend({
       });
     });
   },
+  initiate_annotator: function(can_edit) {
+    var b = jQuery('div.article').annotator({ readOnly: !can_edit }).annotator('addPlugin', 'H2O', layer_data).annotator('addPlugin', 'Store', {
+      prefix: '/annotations',
+      urls: {
+        create: '/create',
+        read: '/annotations/:id',
+        update: '/:id',
+        destroy: '/:id',
+        search: '/search'
+      }
+    });
+  },
   collage_afterload: function(results) {
     last_data = jQuery.parseJSON(results.readable_state);
     jQuery.loadState();
     if(results.can_edit_annotations) {
+      jQuery.initiate_annotator(true);  
       jQuery.listenToRecordCollageState();
       jQuery('.requires_edit').animate({ opacity: 1.0 });
     } else {
+      jQuery.initiate_annotator(false);  
       jQuery('.requires_edit').remove();
     }
     if(results.can_edit_description) {
@@ -1291,16 +1305,6 @@ jQuery(document).ready(function(){
   if(jQuery('.singleitem').length > 0){
     jQuery.showGlobalSpinnerNode();
 
-    var b = jQuery('div.article').annotator().annotator('addPlugin', 'H2O', layer_data).annotator('addPlugin', 'Store', {
-      prefix: '/annotations',
-      urls: {
-        create: '/create',
-        read: '/annotations/:id',
-        update: '/:id',
-        destroy: '/:id',
-        search: '/search'
-      }
-    });
     jQuery('.toolbar, #buttons').css('visibility', 'visible');
     jQuery.observeToolListeners();
     jQuery.observeLayerColorMapping();

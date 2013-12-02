@@ -249,6 +249,7 @@
     offset = $(offsetEl).position();
     var additional_top = 0;
     var additional_left = 0;
+
     //Steph TODO: Figure this out, better
     $.each($(offsetEl).parentsUntil('#shell'), function(i, el) {
       var additional_offset = $(el).position();
@@ -256,6 +257,7 @@
       additional_left += additional_offset.left; 
     });
     additional_top = additional_top - 110;
+
     return {
       top: e.pageY - additional_top,
       left: e.pageX - additional_left
