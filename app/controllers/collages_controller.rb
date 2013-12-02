@@ -95,12 +95,11 @@ class CollagesController < BaseController
     @page_cache = true if @collage.public?
     @editability_path = access_level_collage_path(@collage)
 
-    add_javascripts "collages_annotatorv#{@collage.annotator_version}"
     if @collage.annotator_version == 2
-      add_javascripts ['json2.js', 'annotator-full.js', 'annotator_h2o.js']
+      add_javascripts ['json2.js', 'annotator-full.js']
       add_stylesheets 'annotator.min.css'
     end
-    add_javascripts ['markitup/jquery.markitup.js','markitup/sets/textile/set.js','markitup/sets/html/set.js', 'jquery.xcolor']
+    add_javascripts ['markitup/jquery.markitup.js','markitup/sets/textile/set.js','markitup/sets/html/set.js', 'jquery.xcolor', "collages_annotatorv#{@collage.annotator_version}"]
     add_stylesheets ['/javascripts/markitup/skins/markitup/style.css','/javascripts/markitup/sets/textile/style.css', 'collages']
 
     @color_map = @collage.color_map

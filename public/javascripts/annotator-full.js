@@ -913,15 +913,17 @@
       annotation.quote = [];
       annotation.ranges = [];
       annotation.highlights = [];
+      if(annotation.id === undefined) {
+        annotation.id = 'noid';
+      }
+
       for (_l = 0, _len3 = normedRanges.length; _l < _len3; _l++) {
         normed = normedRanges[_l];
         annotation.quote.push($.trim(normed.text()));
-        annotation.ranges.push(normed.serialize(this.wrapper[0], '.annotator-hl'));
-        var base_css_classes = 'annotator-hl';
-        if(annotation.id) {
-          base_css_classes += ' annotation-' + annotation.id;
-        }
-        if(annotation.category) {
+        annotation.ranges.push(normed.serialize(this.wrapper[0], '.annotator-hl,.unlayered'));
+
+        var base_css_classes = 'annotator-hl annotation-' + annotation.id;
+        if(annotation.category !== undefined) {
           for(_c = 0; _c < annotation.category.length; _c++) {
             base_css_classes += ' ' + annotation.category[_c];
           }
@@ -930,6 +932,7 @@
       }
       annotation.quote = annotation.quote.join(' / ');
       $(annotation.highlights).data('annotation', annotation);
+
       return annotation;
     };
 
@@ -941,6 +944,7 @@
 
     Annotator.prototype.deleteAnnotation = function(annotation) {
       this.publish('beforeAnnotationDeleted', [annotation]);
+
       var child, h, _k, _len2, _ref1;
       if ($('.annotation-' + annotation.id).size() > 0) {
         _ref1 = $('.annotation-' + annotation.id);
@@ -1158,6 +1162,7 @@
 	        var input = $(el).find('input[name=new_layer]');
 	        var hex = $(el).find('.hexes .active');
 	        if(input.val() != '' && hex.size() > 0) {
+            input.val(input.val().replace(/ /g, '_'));
 	          annotation.new_layer_list.push({ layer: input.val(), hex: hex.data('value') });
 	        } else {
 	          annotation.error = true;
@@ -2123,9 +2128,6 @@
           }
 
           annotation.id = data.id;
-          console.log('noid');
-          console.log(annotation);
-          console.log(annotation.category);
           _this.annotator.plugins.H2O.updateMarkupNoid(annotation);
 
           return _this.updateAnnotation(annotation, data);

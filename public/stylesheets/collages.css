@@ -197,7 +197,8 @@ form.formtastic fieldset > ol > li.text textarea.markItUpEditor { width: 100%; }
 }
 .remove_layer {
 }
-.hexes a {
+.hexes a,
+.hexes span {
   display: inline-block;
   width: 20px;
   height: 20px;
@@ -207,8 +208,11 @@ form.formtastic fieldset > ol > li.text textarea.markItUpEditor { width: 100%; }
 .hexes a.active {
   border: 2px solid #000;
 }
-.hexes a.inactive {
+.hexes span.inactive {
   opacity: 0.25;
+  border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
 }
 
 #collage_tag_list_input .inline-hints,

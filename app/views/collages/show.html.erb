@@ -55,9 +55,11 @@
           </li>
            <% end -%>
         </ul>
+        <% if false -%>
         <ul>
           <li><a href="#" class="tooltip" title="Show <%= @collage.user.login %>'s version of the collage" id="author_edits">SHOW <%= @collage.user.simple_display %>'S TEXT EDITS</a></li>
         </li>
+        <% end -%>
 
         <% if @collage.annotator_version == 1 -%>
         <h5>ANNOTATIONS</h5>
