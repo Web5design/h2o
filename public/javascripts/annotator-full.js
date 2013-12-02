@@ -934,7 +934,6 @@
     };
 
     Annotator.prototype.updateAnnotation = function(annotation) {
-      console.log('inside update annotation');
       this.publish('beforeAnnotationUpdated', [annotation]);
       this.publish('annotationUpdated', [annotation]);
       return annotation;
@@ -2123,7 +2122,11 @@
             console.warn(Annotator._t("Warning: No ID returned from server for annotation "), annotation);
           }
 
-          _this.annotator.plugins.H2O.updateMarkupNoid(data.id);
+          annotation.id = data.id;
+          console.log('noid');
+          console.log(annotation);
+          console.log(annotation.category);
+          _this.annotator.plugins.H2O.updateMarkupNoid(annotation);
 
           return _this.updateAnnotation(annotation, data);
         });

@@ -758,6 +758,7 @@ jQuery(document).ready(function(){
   if(jQuery('.singleitem').length > 0){
     jQuery.showGlobalSpinnerNode();
 
+console.log('here');
     var b = jQuery('div.article').annotator().annotator('addPlugin', 'H2O', layer_data).annotator('addPlugin', 'Store', {
       prefix: '/annotations',
       urls: {
@@ -811,11 +812,11 @@ jQuery(document).ready(function(){
 });
 
 var layer_tools_visibility = '\
-<li data-hex="{{hex}}" data-name="{{name}}" data-id="l{{id}}">\
-<a class="hide_show shown tooltip l{{id}}" href="#" original-title="Hide the {{name}} layer">HIDE "{{name}}"</a>\
+<li data-hex="{{hex}}" data-name="{{layer}}" data-id="l{{id}}">\
+<a class="hide_show shown tooltip l{{id}}" href="#" original-title="Hide the {{layer}} layer">HIDE "{{layer}}"</a>\
 </li>';
 
 var layer_tools_highlights = '\
-<li data-hex="{{hex}}" data-name="{{name}}" data-id="l{{id}}">\
-<a class="tooltip link-o l{{id}}" href="#" original-title="Highlight the {{name}} Layer">HIGHLIGHT "{{name}}" <span style="background:#{{hex}}" class="indicator"></span></a>\
+<li data-hex="{{hex}}" data-name="{{layer}}" data-id="l{{id}}">\
+<a class="tooltip link-o l{{id}}" href="#" original-title="Highlight the {{layer}} Layer">HIGHLIGHT "{{layer}}" <span style="background:#{{hex}}" class="indicator"></span></a>\
 </li>';

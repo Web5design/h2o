@@ -1,8 +1,9 @@
 var unlayered_count = 0;
 
-var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+/* var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+ */
 
 Annotator.Plugin.H2O = (function() {
   H2O.prototype.field = null;
@@ -16,6 +17,7 @@ Annotator.Plugin.H2O = (function() {
   function H2O(element, categories) {
     this.setAnnotationCat = __bind(this.setAnnotationCat, this);
     this.updateField = __bind(this.updateField, this);
+    this.updateViewer = __bind(this.updateViewer, this);
     this.options.categories = categories;
   }
 
@@ -94,11 +96,16 @@ Annotator.Plugin.H2O = (function() {
     return v = viewer;
   };
 
-  H2O.prototype.updateMarkupNoid = function(annotation_id) {
-    $('.annotation-noid').addClass('annotation-' + annotation_id).removeClass('annotation-noid').data('layered', annotation_id);
-    $('.layered-border-start-noid').removeClass('layered-border-start-noid').addClass('layered-border-start-' + annotation_id).data('layered', annotation_id);
-    $('.layered-border-end-noid').removeClass('layered-border-end-noid').addClass('layered-border-end-' + annotation_id).data('layered', annotation_id);
-    $('.layered-ellipsis-noid').removeClass('layered-ellipsis-noid').addClass('layered-ellipsis-' + annotation_id).data('layered', annotation_id);
+  H2O.prototype.updateMarkupNoid = function(annotation) {
+    $('.annotation-noid').addClass('annotation-' + annotation.id).removeClass('annotation-noid').data('layered', annotation.id);
+    $('.layered-border-start-noid').removeClass('layered-border-start-noid').addClass('layered-border-start-' + annotation.id).data('layered', annotation.id);
+    $('.layered-border-end-noid').removeClass('layered-border-end-noid').addClass('layered-border-end-' + annotation.id).data('layered', annotation.id);
+    var categories = annotation.category;
+    for(var _i = 0; _i < annotation.new_layer_list.length; _i++) {
+      categories.push('layer-' + annotation.new_layer_list[_i].layer); 
+    }
+    var layer_class = categories.join(' ');
+    $('.layered-ellipsis-noid').removeClass('layered-ellipsis-noid').addClass('layered-ellipsis-' + annotation.id + ' ' + layer_class).data('layered', annotation.id);
   };
 
   H2O.prototype.manageLayerCleanup = function(_annotator, annotation, check_for_new) {
@@ -116,7 +123,6 @@ Annotator.Plugin.H2O = (function() {
           });
         }
         if(!found) {
-          $(el).remove(); 
           var updated_fields = new Array();
           for(var _j = 0; _j < _annotator.editor.fields.length; _j++) {
             if(_annotator.editor.fields[_j].id != 'layer-' + $(el).data('name')) {
@@ -125,6 +131,8 @@ Annotator.Plugin.H2O = (function() {
           }
           _annotator.editor.fields = updated_fields;
           _annotator.editor.element.find('input#layer-' + $(el).data('name')).parent().remove();
+          $("#layers li[data-name='" + $(el).data('name') + "']").remove();
+          $(el).remove(); 
         }
       }
     });
@@ -137,6 +145,7 @@ Annotator.Plugin.H2O = (function() {
       _this.annotator.editor.element.find('.annotator-h2o_layer_button').remove();
       _this.annotator.editor.fields.pop();
       $.each(annotation.new_layer_list, function(i, el) {
+        annotation.category.push("layer-" + el.layer);
         layer_data[el.layer] = el.hex;
 	      _this.annotator.editor.addField({
 	        id: 'layer-' + el.layer,
@@ -152,10 +161,11 @@ Annotator.Plugin.H2O = (function() {
             el.id = j;
           }
         });
-        var li_node = $('<li>').data('hex', el.hex).data('name', el.layer).data('id', 'l' + el.id);
-        var link_text = 'HIGHLIGHT "' + el.layer + '" <span class="indicator" style="background-color:#' + el.hex + ';"></span>';
-        li_node.append($('<a>').attr('class', 'l' + el.id + ' tooltip link-o').attr('href', '#').attr('original-title', 'Highlight the ' + el.layer + ' layer').html(link_text));
-        $('#layers_highlights').append(li_node);
+        
+        var new_node = $($.mustache(layer_tools_visibility, el));
+        new_node.appendTo($('#layers'));
+        var new_node2 = $($.mustache(layer_tools_highlights, el));
+        new_node2.appendTo($('#layers_highlights'));
       });
       _this.annotator.editor.addField({
         id: 'add_new_layer',
@@ -163,6 +173,7 @@ Annotator.Plugin.H2O = (function() {
         label: 'New Layer',
         submit: _this.setAnnotationCat
       });
+      annotation.new_layer_list = [];
     }
   };
 
@@ -498,14 +509,11 @@ Annotator.Plugin.H2O = (function() {
     } else {
       $(field).find('input').attr('checked', false);
     }
-
     return true;
   };
 
   H2O.prototype.setAnnotationCat = function(field, annotation) {
-    if(annotation.category === undefined) {
-      annotation.category = [];
-    }
+    annotation.category = [];
     $.each(this.annotator.editor.fields, function(_i, _field) {
       if($('input#' + _field.id).attr('checked') == 'checked') {
         annotation.category.push(_field.id);
@@ -517,17 +525,16 @@ Annotator.Plugin.H2O = (function() {
   H2O.prototype.updateViewer = function(field, annotation) {
     field = $(field);
     field.addClass('annotator-category');
+    // TODO: Figure out why new annotations have layers listed twice, but for 
+    // now, this deals with it
+    var displayed = {};
     for(_c = 0; _c < annotation.category.length; _c++) {
-      var layer_name = annotation.category[_c].replace(/layer-/, '');
-      var hex = layer_data[layer_name];
-      var color_combine = jQuery.xcolor.opacity('#FFFFFF', hex, 0.4);
-      field.append($('<span>').attr('style', 'background-color:' + color_combine.getHex()).html(layer_name));
-    }
-    if(annotation.new_layer_list !== undefined) {
-      for(_c = 0; _c < annotation.new_layer_list.length; _c++) {
-        var layer = annotation.new_layer_list[_c];
-        var color_combine = jQuery.xcolor.opacity('#FFFFFF', layer.hex, 0.4);
-        field.append($('<span>').attr('style', 'background-color:' + color_combine.getHex()).html(layer.layer));
+      if(displayed[layer_name] === undefined) {
+        var layer_name = annotation.category[_c].replace(/layer-/, '');
+        var hex = layer_data[layer_name];
+        var color_combine = jQuery.xcolor.opacity('#FFFFFF', hex, 0.4);
+        displayed[layer_name] = 1;
+        field.append($('<span>').attr('style', 'background-color:' + color_combine.getHex()).html(layer_name));
       }
     }
   };
