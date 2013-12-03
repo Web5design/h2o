@@ -642,6 +642,13 @@ jQuery.extend({
   observeDeleteInheritedAnnotations: function () {
     jQuery('#delete_inherited_annotations').live('click', function(e) {
       e.preventDefault();
+      console.log($('div.article').annotator());
+      console.log(Annotator);
+      console.log(Annotator.annotations);
+      console.log(Annotator.Plugin.H2O);
+      console.log(Annotator.Plugin.H2O.annotator);
+      console.log(Annotator.Plugin.H2O.annotator.annotations);
+return;
       jQuery.ajax({
         type: 'GET',
         cache: false,
@@ -1108,7 +1115,7 @@ jQuery.extend({
     var nodes = new Array();
     var previous_element = jQuery('tt#' + collage_link.link_text_start).prev();
     var current_node = jQuery('tt#' + collage_link.link_text_start);
-    var link_node = jQuery('<a href="/collages/' + collage_link.linked_collage_id + '"></a>');
+    var link_node = jQuery('<a class="collage-link" href="/collages/' + collage_link.linked_collage_id + '"></a>');
     var i = 0;
     //all_tts.size() is used to prevent infinite loop here
     while(current_node.attr('id') != collage_link.link_text_end && i < all_tts.size()) {
@@ -1305,25 +1312,26 @@ jQuery(document).ready(function(){
   if(jQuery('.singleitem').length > 0){
     jQuery.showGlobalSpinnerNode();
 
+    jQuery.each(collage_links, function(i, el) {
+      clean_collage_links[i] = el.collage_link;
+      jQuery.markupCollageLink(clean_collage_links[i]);
+    });
+
     jQuery('.toolbar, #buttons').css('visibility', 'visible');
     jQuery.observeToolListeners();
     jQuery.observeLayerColorMapping();
 
     /*
     //TODO: Possibly move this before annotator
-    jQuery.each(collage_links, function(i, el) {
-      clean_collage_links[i] = el.collage_link;
-      jQuery.markupCollageLink(clean_collage_links[i]);
-    });
 
     jQuery.observePrintListeners();
     jQuery.observeHeatmap();
   
     jQuery.observeStatsListener();
     jQuery.observeViewerToggleEdit();
-    jQuery.observeDeleteInheritedAnnotations();
     jQuery.updateWordCount();
 */
+    jQuery.observeDeleteInheritedAnnotations();
 
     /* Collage Search */
     jQuery.initKeywordSearch();

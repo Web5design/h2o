@@ -922,7 +922,7 @@
       for (_l = 0, _len3 = normedRanges.length; _l < _len3; _l++) {
         normed = normedRanges[_l];
         annotation.quote.push($.trim(normed.text()));
-        annotation.ranges.push(normed.serialize(this.wrapper[0], '.annotator-hl,.unlayered'));
+        annotation.ranges.push(normed.serialize(this.wrapper[0], '.annotator-hl,.unlayered,.collage-link'));
 
         var base_css_classes = 'annotator-hl annotation-' + annotation.id;
         if(annotation.category !== undefined) {

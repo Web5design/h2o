@@ -14,6 +14,9 @@ var unlayered_tts;
 var update_unlayered_end = 0;
 
 jQuery.extend({
+  initiate_annotator: function() {
+    //dummy function for annotator version 1
+  },
   xPathFromSingleNode: function(node, type, root_selector) {
     var index = node.parent().find('> *').index(node);
     if(type == 'end') {
@@ -28,7 +31,6 @@ jQuery.extend({
       offset -= 1;
     }
     var path = '';
-    console.log(node.parentsUntil(root_selector));
     jQuery.each(node.parentsUntil(root_selector), function(i, el) {
       var tagName = jQuery(el)[0].tagName;
       var idx = jQuery(el).parent().children(tagName).index(jQuery(el)) + 1;
@@ -52,10 +54,6 @@ jQuery.extend({
     jQuery('.upgrade-action').live('click', function(e) {
       e.preventDefault();
       var node = jQuery('<p>').html('You have chosen to upgrade the annotator tool used by this collage. Would you like to continue?');
-      //TODO: Move this below
-      var data = jQuery.xPathFromAllAnnotations();
-      console.log(data);
-      //return;
       jQuery(node).dialog({
         title: 'Upgrade Collage Annotation Tool',
         width: 'auto',
@@ -65,7 +63,7 @@ jQuery.extend({
             jQuery.ajax({
               type: 'post',
               dataType: 'json',
-              data: { "annotation_data" : data },
+              data: { "annotation_data" : jQuery.xPathFromAllAnnotations() },
               url: '/collages/' + jQuery('#collage').data('itemid') + '/upgrade_annotator',
               beforeSend: function() {
                 jQuery.showGlobalSpinnerNode();

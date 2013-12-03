@@ -82,11 +82,11 @@
            <% end -%>
         </ul>
 
-        <% if @collage.annotations.detect { |a| a.cloned == true } %>
         <h5 id="inherited_h">ACTIONS</h5>
         <span id="inherited_span" class="requires_edit">
           <a href="#" id="delete_inherited_annotations" class="tooltip" title="Delete Inherited Layers and Annotations from remix">DELETE INHERITED LAYERS</a>
         </span>
+        <% if @collage.annotations.detect { |a| a.cloned == true } %>
         <% end -%>
       </div>
     </aside>
