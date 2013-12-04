@@ -1,4 +1,6 @@
 var unlayered_count = 0;
+var booya;
+var recorded_annotations;
 
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
 __hasProp = {}.hasOwnProperty,
@@ -27,11 +29,30 @@ H2O.prototype.pluginInit = function() {
     H2O.prototype.setUnlayeredSingle(annotation);
     H2O.prototype.setLayeredBorders([annotation]);
     jQuery.rehighlight();
+    jQuery.updateWordCount();
   });
   this.annotator.subscribe("annotationsLoaded", function(annotations) {
     H2O.prototype.setUnlayeredAll();
     H2O.prototype.setLayeredBorders(annotations);
     jQuery.rehighlight();
+    jQuery.hideShowUnlayeredOptions();
+    jQuery.updateWordCount();
+
+    booya = h2o_annotator.annotator;
+    recorded_annotations = h2o_annotator.annotations;
+
+    if(h2o_annotator.annotator.options.readOnly) {
+      access_results = { 'can_edit_annotations' : false };
+      last_data = original_data;
+    }
+    jQuery.loadState();
+
+    //loadState has to be before listenTo
+    if(!h2o_annotator.annotator.options.readOnly) {
+      jQuery.listenToRecordCollageState();
+    }
+    
+    H2O.prototype.setUnlayeredListeners();
   });
   this.annotator.subscribe("beforeAnnotationDeleted", function(annotation) {
     if(annotation.id !== 'noid') {
@@ -41,8 +62,8 @@ H2O.prototype.pluginInit = function() {
   this.annotator.subscribe("annotationDeleted", function(annotation) {
     if(annotation.id !== 'noid') {
       H2O.prototype.destroyAnnotationMarkup(annotation);
-      H2O.prototype.resetUnlayeredListeners();
       H2O.prototype.manageLayerCleanup(h2o_annotator.annotator, annotation, false);
+      jQuery.updateWordCount();
     }
   });
   this.annotator.subscribe("annotationUpdated", function(annotation) {
@@ -113,9 +134,6 @@ H2O.prototype.updateMarkupNoid = function(annotation) {
 
 H2O.prototype.manageLayerCleanup = function(_annotator, annotation, check_for_new) {
   $.each($('#layers_highlights li'), function(i, el) {
-    if($(el).data('name') == 'required') {
-      next;
-    }
     if($('span.layer-' + $(el).data('name')).size() == 0) {
       var found = false;
       if(check_for_new) {
@@ -126,14 +144,16 @@ H2O.prototype.manageLayerCleanup = function(_annotator, annotation, check_for_ne
         });
       }
       if(!found) {
-        var updated_fields = new Array();
-        for(var _j = 0; _j < _annotator.editor.fields.length; _j++) {
-          if(_annotator.editor.fields[_j].id != 'layer-' + $(el).data('name')) {
-            updated_fields.push(_annotator.editor.fields[_j]);
+        if($(el).data('name') != 'required') {
+          var updated_fields = new Array();
+          for(var _j = 0; _j < _annotator.editor.fields.length; _j++) {
+            if(_annotator.editor.fields[_j].id != 'layer-' + $(el).data('name')) {
+              updated_fields.push(_annotator.editor.fields[_j]);
+            }
           }
+          _annotator.editor.fields = updated_fields;
+          _annotator.editor.element.find('input#layer-' + $(el).data('name')).parent().remove();
         }
-        _annotator.editor.fields = updated_fields;
-        _annotator.editor.element.find('input#layer-' + $(el).data('name')).parent().remove();
         $("#layers li[data-name='" + $(el).data('name') + "']").remove();
         $(el).remove(); 
       }
@@ -143,6 +163,10 @@ H2O.prototype.manageLayerCleanup = function(_annotator, annotation, check_for_ne
 
 H2O.prototype.manageNewLayers = function(annotation, data) {
   var _this = this;
+
+  //TODO: If annotation.category includes required, and 
+  // #layers li[data-name='required'] is empty
+  // Add to highlight and hide in navigation
 
   if(annotation.new_layer_list.length > 0) {
     _this.annotator.editor.element.find('.annotator-h2o_layer_button').remove();
@@ -234,6 +258,13 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
   var front_unlayered = false;
   var back_unlayered = false;
   var all_items = $('.unlayered,.annotator-hl');
+
+  //For some reason annotation.highlights is empty
+  //when we get here on delete inherited
+  if(annotation.highlights === undefined) {
+    annotation.highlights = $('.annotation-' + annotation.id);
+  }
+
   var first_pos = all_items.index(annotation.highlights[0]);
   var prev_node = $(all_items[first_pos - 1]);
   if(prev_node.is('.unlayered') && $(annotation.highlights[0]).parents('.annotator-hl').size() == 0) {
@@ -418,12 +449,10 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
     } else {
       //Do nothing 
     }
-
-    H2O.prototype.resetUnlayeredListeners();
   };
 
   H2O.prototype.setUnlayeredAll = function() {
-    $('.annotator-wrapper *:not(.annotator-hl):not(:has(.annotator-hl))').addClass('unlayered');
+    $('.annotator-wrapper *:not(.annotator-hl):not(:has(.annotator-hl)):not(br):not(.paragraph-numbering)').addClass('unlayered');
     $.each($('.annotator-wrapper *:not(.annotator-hl):has(.annotator-hl)'), function(i, el) {
       if($(el).children(':not(.annotator-hl):has(.annotator-hl)').size() == 0) {
         var contents = $(el).contents();
@@ -442,6 +471,7 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
     var all_items = $('.annotator-hl,.unlayered');
     if($(all_items[0]).is('.unlayered')) {
       $('<a href="#" class="unlayered-border-start unlayered-border-start-0" data-unlayered="0"></a><a href="#" class="unlayered-ellipsis unlayered-ellipsis-0" data-unlayered="0">...</a>').insertBefore($(all_items[0]));
+      $(all_items[0]).addClass('unlayered-0').data('unlayered', 0);
     }
     for(var _i = 1; _i < all_items.size(); _i++) {
       var current_node = $(all_items[_i]);
@@ -461,12 +491,10 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
     if(all_items.last().is('.unlayered')) {
       $('<a href="#" class="unlayered-border-end unlayered-border-end-' + unlayered_count + '" data-unlayered="' + unlayered_count + '"></a>').insertAfter(all_items.last());
     }
-
-    H2O.prototype.resetUnlayeredListeners();
   };
 
-  H2O.prototype.resetUnlayeredListeners = function() {
-    $('.unlayered-ellipsis').off('click').on('click', function(e) {
+  H2O.prototype.setUnlayeredListeners = function() {
+    $(document).delegate('.unlayered-ellipsis', 'click', function(e) {
       e.preventDefault();
       var key = $(this).data('unlayered');
       $('.unlayered-' + key).show();
@@ -474,7 +502,7 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
       $(this).hide();
       jQuery.hideShowUnlayeredOptions();
     });
-    $('.unlayered-border-start,.unlayered-border-end').off('click').on('click', function(e) {
+    $(document).delegate('.unlayered-border-start,.unlayered-border-end', 'click', function(e) {
       e.preventDefault();
       var key = $(this).data('unlayered');
       $('.unlayered-' + key).hide();
@@ -642,13 +670,7 @@ jQuery.extend({
   observeDeleteInheritedAnnotations: function () {
     jQuery('#delete_inherited_annotations').live('click', function(e) {
       e.preventDefault();
-      console.log($('div.article').annotator());
-      console.log(Annotator);
-      console.log(Annotator.annotations);
-      console.log(Annotator.Plugin.H2O);
-      console.log(Annotator.Plugin.H2O.annotator);
-      console.log(Annotator.Plugin.H2O.annotator.annotations);
-return;
+
       jQuery.ajax({
         type: 'GET',
         cache: false,
@@ -658,8 +680,15 @@ return;
           jQuery.showGlobalSpinnerNode();
         },
         success: function(data){
-          //console.log('reload page here instead');
+          var stored_annotations = booya.dumpAnnotations();
+          $.each(stored_annotations, function(_i, a) {
+            if(a.cloned) {
+              booya.specialDeleteAnnotation(a);
+            }
+          });
+          jQuery.updateWordCount();
           jQuery.hideGlobalSpinnerNode();
+          $('#inherited_h,#inherited_span').remove();
         },
         error: function() {
           jQuery.hideGlobalSpinnerNode();
@@ -681,10 +710,8 @@ return;
   },
   collage_afterload: function(results) {
     last_data = jQuery.parseJSON(results.readable_state);
-    jQuery.loadState();
     if(results.can_edit_annotations) {
       jQuery.initiate_annotator(true);  
-      jQuery.listenToRecordCollageState();
       jQuery('.requires_edit').animate({ opacity: 1.0 });
     } else {
       jQuery.initiate_annotator(false);  
@@ -937,16 +964,14 @@ return;
     jQuery('#author_edits').click(function(e) {
       e.preventDefault();
       last_data = original_data;
+      jQuery('.unlayered,.annotator-hl').show();
       jQuery.loadState();
     });
     jQuery('#full_text').click(function(e) {
       e.preventDefault();
       jQuery.showGlobalSpinnerNode();
-      jQuery('center.unlayered').show();
-      jQuery('.unlayered:not(center)').css('display', 'inline');
-      jQuery('.unlayered-border-start,.unlayered-border-end,.unlayered-ellipsis').hide();
-      jQuery('.annotator-hl').show();
-      jQuery('.layered-control,.layered-ellipsis').hide();
+      jQuery('.unlayered,.annotator-hl').show();
+      jQuery('.unlayered-border-start,.unlayered-border-end,.unlayered-ellipsis,.layered-control,.layered-ellipsis').hide();
       jQuery.each(jQuery('#layers a.hide_show'), function(i, el) {
         jQuery(el).html('HIDE "' + jQuery(el).parent().data('name') + '"');
       });
@@ -1035,7 +1060,17 @@ return;
     });
   },
   recordCollageState: function(data, show_message) {
-    var words_shown = jQuery('#collage div.article tt').filter(':visible').size();
+    var words_shown = 0;
+    var b = $('.unlayered:not(.unlayered > .unlayered):not(.paragraph-numbering):not(:empty):visible').text().replace(/[^\w ]/g, "");
+    if(b != '') {
+      words_shown += b.split( /\s+/ ).length;
+    }
+
+    var c = $('.annotator-hl:not(.annotator-hl > .annotator-hl):not(.paragraph-numbering):not(:empty):visible').text().replace(/[^\w ]/g, "");
+    if(c != '') {
+      words_shown += c.split( /\s+/ ).length;
+    }
+
     jQuery.ajax({
       type: 'POST',
       cache: false,
@@ -1045,32 +1080,41 @@ return;
       },
       url: jQuery.rootPath() + 'collages/' + jQuery.getItemId() + '/save_readable_state',
       success: function(results){
-        if(show_message) {
-          jQuery('#autosave').html('Updated at: ' + results.time);
-          jQuery.updateWordCount();
-        }
+        //if(show_message) {
+          //jQuery('#autosave').html('Updated at: ' + results.time);
+        //}
       }
     });
   },
   updateWordCount: function() {
-    /* var layered = all_tts.size() - unlayered_tts.size();
-    jQuery('#word_stats').html(layered + ' layered, ' + unlayered_tts.size() + ' unlayered');
-    */
+    var unlayered = 0;
+    var b = $('.unlayered:not(.unlayered > .unlayered):not(.paragraph-numbering):not(:empty)').text().replace(/[^\w ]/g, "");
+    if(b != '') {
+      unlayered = b.split( /\s+/ ).length;
+    }
+
+    var layered = 0;
+    var c = $('.annotator-hl:not(.annotator-hl > .annotator-hl):not(.paragraph-numbering):not(:empty)').text().replace(/[^\w ]/g, "");
+    if(c != '') {
+      layered = c.split( /\s+/ ).length;
+    }
+
+    jQuery('#word_stats').html(layered + ' layered, ' + unlayered + ' unlayered');
   },
   retrieveState: function() {
-    var data = {};
+    var data = new Array();
     jQuery('.unlayered-ellipsis:visible').each(function(i, el) {
-      data['#' + jQuery(el).attr('id')] = jQuery(el).css('display');  
+      data.push('unlayered_' + jQuery(el).data('unlayered'));
     });
-    jQuery('.annotation-ellipsis:visible').each(function(i, el) {
-      data['#' + jQuery(el).attr('id')] = jQuery(el).css('display');  
+    jQuery('.layered-ellipsis:visible').each(function(i, el) {
+      data.push('layered_' + jQuery(el).data('layered'));
     });
     return data;
   },
   listenToRecordCollageState: function() {
     setInterval(function(i) {
       var data = jQuery.retrieveState();
-      if(jQuery('#edit_toggle').hasClass('edit_mode') && (JSON.stringify(data) != JSON.stringify(last_data))) {
+      if(JSON.stringify(data) != JSON.stringify(last_data)) {
         last_data = data;
         jQuery.recordCollageState(JSON.stringify(data), true);
       }
@@ -1078,23 +1122,17 @@ return;
   },
   loadState: function() {
     jQuery.each(last_data, function(i, e) {
-      if(i.match(/#unlayered-ellipsis/)) {
-        var id = i.replace(/#unlayered-ellipsis-/, '');
-        jQuery('.unlayered-control-' + id + ':first').click();
-      } else if(i.match(/#annotation-ellipsis/) && e != 'none') {
-        jQuery(i).css('display', 'inline');
-        var annotation_id = i.replace(/#annotation-ellipsis-/, '');
-        var subset = jQuery('tt.a' + annotation_id);
-        subset.css('display', 'none');
-        jQuery.resetParentDisplay(subset);
-      } else if(i.match(/^\.a/)) { //Backwards compatibility update
-        jQuery(i).css('display', 'inline');
-        var annotation_id = i.replace(/^\.a/, '');
-        jQuery('#annotation-ellipsis-' + annotation_id).hide();
-      } else {
-        jQuery(i).css('display', e);
+      if(e.match(/^unlayered/)) {
+        var _i = e.replace(/^unlayered_/, '');
+        $('.unlayered-' + _i).hide();
+        $('.unlayered-ellipsis-' + _i).show();
+      } else if(e.match(/^layered/)) {
+        var _i = e.replace(/^layered_/, '');
+        $('.annotation-' + _i).hide();
+        $('.layered-ellipsis-' + _i).show();
       }
     });
+    jQuery.hideShowUnlayeredOptions();
     if(access_results.can_edit_annotations) {
       jQuery('#edit_toggle').click();
       jQuery.toggleEditMode(true);
@@ -1109,7 +1147,6 @@ return;
       jQuery(window).scrollTop(jQuery.cookie('scroll_pos'));
       jQuery.cookie('scroll_pos', null);
     }
-    jQuery.hideShowUnlayeredOptions();
   }, 
   markupCollageLink: function(collage_link) {
     var nodes = new Array();
@@ -1329,7 +1366,6 @@ jQuery(document).ready(function(){
   
     jQuery.observeStatsListener();
     jQuery.observeViewerToggleEdit();
-    jQuery.updateWordCount();
 */
     jQuery.observeDeleteInheritedAnnotations();
 

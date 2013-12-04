@@ -178,10 +178,10 @@ class AnnotationsController < BaseController
     end
     @annotation.destroy
 
-    render :text => "We've deleted that item."
+    render :json => {}
   rescue Exception => e
     logger.warn("Could not delete annotation: #{e.inspect}")
-    render :text => "There seems to have been a problem deleting that item. #{e.inspect}", :status => :unprocessable_entity
+    render :json => { :error => "There seems to have been a problem deleting that item. #{e.inspect}" }, :status => :unprocessable_entity
   end
 
   private

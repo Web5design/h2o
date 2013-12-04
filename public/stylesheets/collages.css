@@ -438,3 +438,8 @@ form.formtastic fieldset > ol > li.layer_check input {
   background: #333333;
   color: #FFF;
 }
+
+.annotator-wrapper .layered-ellipsis,
+.annotator-wrapper .unlayered-ellipsis {
+  margin: 0px 2px;
+}

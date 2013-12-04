@@ -1087,6 +1087,7 @@
     };
 
     Annotator.prototype.deleteAnnotation = function(annotation) {
+    console.log(annotation.highlights);
       this.publish('beforeAnnotationDeleted', [annotation]);
 
       var child, h, _k, _len2, _ref1;
@@ -1103,6 +1104,29 @@
       }
       this.publish('annotationDeleted', [annotation]);
       return annotation;
+    };
+    
+    Annotator.prototype.specialDeleteAnnotation = function(annotation) {
+      var _this = this;
+
+      _this.publish('beforeAnnotationDeleted', [annotation]);
+      var child, h, _k, _len2, _ref1;
+      if (annotation.highlights != null) {
+        _ref1 = annotation.highlights;
+        for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
+          h = _ref1[_k];
+          if (!(h.parentNode != null)) {
+            continue;
+          }
+          child = h.childNodes[0];
+          $(h).replaceWith(h.childNodes);
+        }
+      }
+      _this.plugins.H2O.destroyAnnotationMarkup(annotation);
+      _this.plugins.H2O.manageLayerCleanup(_this, annotation, false);
+      _this.plugins.Store.annotations.splice(this.plugins.Store.annotations.indexOf(annotation), 1);
+
+      return;
     };
 
     Annotator.prototype.loadAnnotations = function(annotations) {
@@ -1292,32 +1316,33 @@
       annotation = this.setupAnnotation(this.createAnnotation());
       $(annotation.highlights).addClass('annotator-hl-temporary');
       save = (function(_this) {
-        $('.annotator-error').remove();
-        annotation.error = false;
-        annotation.new_layer_list = [];
-        $.each($('.annotator-h2o_layer'), function(i, el) {
-          var input = $(el).find('input[name=new_layer]');
-          var hex = $(el).find('.hexes .active');
-          if(input.val() != '' && hex.size() > 0) {
-            input.val(input.val().replace(/ /g, '_'));
-            annotation.new_layer_list.push({ layer: input.val(), hex: hex.data('value') });
-          } else {
-            annotation.error = true;
-          }
-        });
+        return function() {
+          $('.annotator-error').remove();
+          annotation.error = false;
+          annotation.new_layer_list = [];
 
-        if(annotation.error) {
-          var error_node = $('<li>').addClass('annotator-item annotator-error').html('You must add a layer name and select a color for each new layer');
-          error_node.insertBefore($('.annotator-h2o_layer:first'));
-          //H2O TODO: Figure out how to deal with this, keep editor open
-          throw "Annotator error - hex / layer missing";
-        } else {
-          return function() {
+          $.each($('.annotator-h2o_layer'), function(i, el) {
+            var input = $(el).find('input[name=new_layer]');
+            var hex = $(el).find('.hexes .active');
+            if(input.val() != '' && hex.size() > 0) {
+              input.val(input.val().replace(/ /g, '_'));
+              annotation.new_layer_list.push({ layer: input.val(), hex: hex.data('value') });
+            } else {
+              annotation.error = true;
+            }
+          });
+
+          if(annotation.error) {
+            var error_node = $('<li>').addClass('annotator-item annotator-error').html('You must add a layer name and select a color for each new layer');
+            error_node.insertBefore($('.annotator-h2o_layer:first'));
+            //H2O TODO: Figure out how to deal with this, keep editor open
+            throw "Annotator error - hex / layer missing";
+          } else {
             cleanup();
             $(annotation.highlights).removeClass('annotator-hl-temporary');
             return _this.publish('annotationCreated', [annotation]);
-          };
-        }
+          }
+        };
       })(this);
       cancel = (function(_this) {
         return function() {
@@ -2319,6 +2344,7 @@
     };
 
     Store.prototype.beforeAnnotationDeleted = function(annotation) {
+      //Do nothing
     };
 
     Store.prototype.annotationDeleted = function(annotation) {
@@ -2368,7 +2394,8 @@
         var formatted_annotation = { "id" : annotation.id,
           "text" : annotation.annotation,
           "ranges": ranges,
-          "category": category
+          "category": category,
+          "cloned": annotation.cloned
         };
         formatted_annotation.ranges = ranges;
         annotation_data.push(formatted_annotation);

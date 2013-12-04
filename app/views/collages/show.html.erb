@@ -3,7 +3,9 @@
 </form>
 <div id="fixed_links">
 <a href="#" class="fixed_link left-tooltip" id="collapse_toggle" title="Collage Info">Collapse/Expand</a>
+<% if @collage.annotator_version == 1 -%>
 <a href="#" class="fixed_link requires_edit left-tooltip" id="edit_toggle" title="Edit/Read">Edit/View</a>
+<% end -%>
 <a href="#" class="fixed_link left-tooltip" id="fixed_print" title="Print <%= @collage.name %>">Print</a>
 <a href="#" class="fixed_link left-tooltip btn-a dont_hide" id="fixed_font" title="Change the size of the text">Font Settings</a>
 </div>
@@ -55,11 +57,10 @@
           </li>
            <% end -%>
         </ul>
-        <% if false -%>
+
         <ul>
           <li><a href="#" class="tooltip" title="Show <%= @collage.user.login %>'s version of the collage" id="author_edits">SHOW <%= @collage.user.simple_display %>'S TEXT EDITS</a></li>
-        </li>
-        <% end -%>
+        </ul>
 
         <% if @collage.annotator_version == 1 -%>
         <h5>ANNOTATIONS</h5>
@@ -82,11 +83,11 @@
            <% end -%>
         </ul>
 
+        <% if @collage.annotations.detect { |a| a.cloned == true } %>
         <h5 id="inherited_h">ACTIONS</h5>
         <span id="inherited_span" class="requires_edit">
           <a href="#" id="delete_inherited_annotations" class="tooltip" title="Delete Inherited Layers and Annotations from remix">DELETE INHERITED LAYERS</a>
         </span>
-        <% if @collage.annotations.detect { |a| a.cloned == true } %>
         <% end -%>
       </div>
     </aside>
