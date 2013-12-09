@@ -96,8 +96,8 @@ class CollagesController < BaseController
     @editability_path = access_level_collage_path(@collage)
 
     if @collage.annotator_version == 2
-      add_javascripts ['json2.js', 'annotator-full.js']
-      add_stylesheets 'annotator.min.css'
+      add_javascripts ['json2', 'annotator-full', 'h2o-annotator']
+      add_stylesheets 'annotator.min'
     end
     add_javascripts ['markitup/jquery.markitup.js','markitup/sets/textile/set.js','markitup/sets/html/set.js', 'jquery.xcolor', "collages_annotatorv#{@collage.annotator_version}"]
     add_stylesheets ['/javascripts/markitup/skins/markitup/style.css','/javascripts/markitup/sets/textile/style.css', 'collages']
@@ -168,10 +168,16 @@ class CollagesController < BaseController
   end
 
   def export
+    add_javascripts ["export_annotatorv1", "export_annotatorv2"]
     render :layout => 'print'
   end
 
   def export_unique
+    if @collage.annotator_version == 2
+      add_javascripts ['json2.js', 'annotator-full.js', 'h2o-annotator.js']
+      add_stylesheets 'annotator.min.css'
+    end
+    add_javascripts "export_annotatorv#{@collage.annotator_version}"
     render :action => 'export', :layout => 'print'
   end
 

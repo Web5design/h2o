@@ -109,3 +109,6 @@ background: url(/images/asterisk.jpg) 2px 1px no-repeat; text-indent: 10px; widt
   font-size: 12px !important;
   margin-top: -20px;
 }
+.annotator-outer { display: none; }
+.layered-ellipsis { display: none; margin: 0px 2px; }
+.unlayered-ellipsis { display: none; margin: 0px 2px; }

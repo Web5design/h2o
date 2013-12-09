@@ -5,11 +5,17 @@
     <p class="item_description scale0-8"><%= Collage.format_content(@collage.description) %></p>
   </div>
   <div class="fontdetails"></div>
+	<div class="article">
+  <% if @collage.annotator_version == 1 -%>
 	<% cache("collage-#{@collage.id}-editable-content") do %>
-	<article>
-		<%= raw @collage.editable_content %>
-	</article>
+	<%= raw @collage.editable_content %>
 	<% end -%>
+  <% else -%>
+	<% cache("collage-#{@collage.id}-editable-content-v2") do %>
+	<%= raw @collage.editable_content_v2 %>
+	<% end -%>
+  <% end -%>
+	</div>
 </div>
 
 <script type="text/javascript">

@@ -878,6 +878,7 @@
       this.showEditor = __bind(this.showEditor, this);
       Annotator.__super__.constructor.apply(this, arguments);
       this.plugins = {};
+
       if (!Annotator.supported()) {
         return this;
       }
@@ -1065,7 +1066,7 @@
       for (_l = 0, _len3 = normedRanges.length; _l < _len3; _l++) {
         normed = normedRanges[_l];
         annotation.quote.push($.trim(normed.text()));
-        annotation.ranges.push(normed.serialize(this.wrapper[0], '.annotator-hl'));
+        annotation.ranges.push(normed.serialize(this.wrapper[0], '.annotator-hl,.unlayered,.collage-link'));
         
         var base_css_classes = 'annotator-hl annotation-' + annotation.id;
         if(annotation.category !== undefined) {
