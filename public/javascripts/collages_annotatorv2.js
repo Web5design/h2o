@@ -114,7 +114,7 @@ $.extend({
           var stored_annotations = st_annotator.dumpAnnotations();
           $.each(stored_annotations, function(_i, a) {
             if(a.cloned) {
-              st_annotator.specialDeleteAnnotation(a);
+              st_annotator.plugins.H2O.specialDeleteAnnotation(a);
             }
           });
           $.updateWordCount();
@@ -242,7 +242,7 @@ $.extend({
       original_annotations = annotations;
       annotations = heatmap;
       heatmap_display = true;
-      st_annotator.plugins.Store.loadAnnotationsH2O();
+      st_annotator.plugins.H2O.loadAnnotations();
       $.highlightHeatmap();
       $('#heatmap_toggle').addClass('disabled');
       $.hideGlobalSpinnerNode();
@@ -254,7 +254,7 @@ $.extend({
       var collage_id = $.getItemId();
       $.each(stored_annotations, function(_i, a) {
         if(a.collage_id != collage_id) {
-          st_annotator.specialDeleteAnnotation(a);
+          st_annotator.plugins.H2O.specialDeleteAnnotation(a);
         }
       });
       annotations = original_annotations; 

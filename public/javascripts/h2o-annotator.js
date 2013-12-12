@@ -20,6 +20,20 @@ function H2O(element, categories) {
 
 H2O.prototype.pluginInit = function() {
   var h2o_annotator = this;
+  //h2o_annotator.annotator.plugins.Store.loadAnnotations = function() {
+  //  console.log('test test');
+  //};
+  this.annotator.viewer.addField = function(options) {
+    var field;
+    field = $.extend({
+      load: function() {}
+    }, options);
+    field.element = $('<div />')[0];
+    this.fields.unshift(field);
+    field.element;
+    return this;
+  };
+
   this.annotator.subscribe("annotationCreated", function(annotation) {
     H2O.prototype.setHighlights(annotation);
     H2O.prototype.setUnlayeredSingle(annotation);
@@ -604,6 +618,57 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
 	      }
 	    }
     }
+  };
+
+  H2O.prototype.loadAnnotations = function() {
+    var annotation_data = [];
+    $.each(annotations, function(i, el) {
+      var annotation = JSON.parse(el).annotation;
+      var ranges = [{
+            "start": annotation.xpath_start,
+            "end": annotation.xpath_end,
+            "startOffset": annotation.start_offset,
+            "endOffset": annotation.end_offset
+      }];
+      var category = new Array();
+      for(var _j = 0; _j < annotation.layers.length; _j++) {
+        category.push('layer-' + annotation.layers[_j].name);
+      }
+      var formatted_annotation = { "id" : annotation.id,
+        "text" : annotation.annotation,
+        "ranges": ranges,
+        "category": category,
+        "cloned": annotation.cloned,
+        "collage_id" : annotation.collage_id
+      };
+      formatted_annotation.ranges = ranges;
+      annotation_data.push(formatted_annotation);
+    });
+    return this.annotator.plugins.Store._onLoadAnnotations(annotation_data);
+  }
+  
+  H2O.prototype.specialDeleteAnnotation = function(annotation) {
+    var _this = this;
+    var _annotator = _this.annotator;
+
+    _annotator.publish('beforeAnnotationDeleted', [annotation]);
+    var child, h, _k, _len2, _ref1;
+    if (annotation.highlights != null) {
+      _ref1 = annotation.highlights;
+      for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
+        h = _ref1[_k];
+        if (!(h.parentNode != null)) {
+          continue;
+        }
+        child = h.childNodes[0];
+        $(h).replaceWith(h.childNodes);
+      }
+    }
+    _this.destroyAnnotationMarkup(annotation);
+    _this.manageLayerCleanup(_this, annotation, false);
+    _annotator.plugins.Store.annotations.splice(_annotator.plugins.Store.annotations.indexOf(annotation), 1);
+
+    return;
   };
 
   return H2O;

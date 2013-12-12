@@ -1106,29 +1106,6 @@
       return annotation;
     };
     
-    Annotator.prototype.specialDeleteAnnotation = function(annotation) {
-      var _this = this;
-
-      _this.publish('beforeAnnotationDeleted', [annotation]);
-      var child, h, _k, _len2, _ref1;
-      if (annotation.highlights != null) {
-        _ref1 = annotation.highlights;
-        for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
-          h = _ref1[_k];
-          if (!(h.parentNode != null)) {
-            continue;
-          }
-          child = h.childNodes[0];
-          $(h).replaceWith(h.childNodes);
-        }
-      }
-      _this.plugins.H2O.destroyAnnotationMarkup(annotation);
-      _this.plugins.H2O.manageLayerCleanup(_this, annotation, false);
-      _this.plugins.Store.annotations.splice(this.plugins.Store.annotations.indexOf(annotation), 1);
-
-      return;
-    };
-
     Annotator.prototype.loadAnnotations = function(annotations) {
       var clone, loader;
       if (annotations == null) {
@@ -1890,8 +1867,7 @@
         load: function() {}
       }, options);
       field.element = $('<div />')[0];
-      //H2O Custom: unshift versus push to prepend fields
-      this.fields.unshift(field);
+      this.fields.push(field);
       field.element;
       return this;
     };
@@ -2308,7 +2284,7 @@
       if (this.options.loadFromSearch) {
         return this.loadAnnotationsFromSearch(this.options.loadFromSearch);
       } else {
-        return this.loadAnnotationsH2O();
+        return this.annotator.plugins.H2O.loadAnnotations();
       }
     };
 
@@ -2376,33 +2352,6 @@
         $.extend(annotation, data);
       }
       return $(annotation.highlights).data('annotation', annotation);
-    };
-
-    Store.prototype.loadAnnotationsH2O = function() {
-      var annotation_data = [];
-      $.each(annotations, function(i, el) {
-        var annotation = JSON.parse(el).annotation;
-        var ranges = [{
-              "start": annotation.xpath_start,
-              "end": annotation.xpath_end,
-              "startOffset": annotation.start_offset,
-              "endOffset": annotation.end_offset
-        }];
-        var category = new Array();
-        for(var _j = 0; _j < annotation.layers.length; _j++) {
-          category.push('layer-' + annotation.layers[_j].name);
-        }
-        var formatted_annotation = { "id" : annotation.id,
-          "text" : annotation.annotation,
-          "ranges": ranges,
-          "category": category,
-          "cloned": annotation.cloned,
-          "collage_id" : annotation.collage_id
-        };
-        formatted_annotation.ranges = ranges;
-        annotation_data.push(formatted_annotation);
-      });
-      return this._onLoadAnnotations(annotation_data);
     };
 
     Store.prototype.loadAnnotations = function() {
