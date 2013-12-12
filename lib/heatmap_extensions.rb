@@ -28,6 +28,10 @@ module HeatmapExtensions
   end
 
   module InstanceMethods
+    def heatmap_active
+      !self.annotatable.collages.detect { |c| c.annotator_version != self.annotator_version }
+    end
+
     def heatmap
       if self.annotator_version == 1
 	      raw_data = {}

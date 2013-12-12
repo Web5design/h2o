@@ -12,7 +12,11 @@
 
 <aside id="singleitem_barcode_toolbar">
   <%= render :partial => "shared/barcode", :locals => { :object => @collage } %>
+  <% if @collage.heatmap_active -%>
   <a href="#" id="heatmap_toggle" title="Show Heatmap" class="link-heatmap tooltip"><span class="icon icon-heatmap"><span>Show/Hide Heatmap</span></span></a>
+  <% else -%>
+  <a href="#" id="heatmap_toggle" title="Heatmap capabilities are temporarily disabled because this collage has multiple annotator versions." class="link-heatmap tooltip inactive"><span class="icon icon-heatmap"><span>Show/Hide Heatmap</span></span></a>
+  <% end -%>
   <a href="<%= copy_collage_path(@collage) %>" class="tooltip remix-action requires_logged_in" id="copy-collage" title="Remix <%= @collage.name %>" data-type="collage" data-title="<%= @collage.name %>">
     <span class="icon icon-remix-large"><span>Remix Collage</span></span>
   </a>

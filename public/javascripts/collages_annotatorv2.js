@@ -225,12 +225,12 @@ $.extend({
     });
   },
   observeHeatmap: function() {
-    $('#heatmap_toggle:not(.inactive,.disabled)').live('click', function(e) {
+    $('#heatmap_toggle:not(.inactive,.activated)').live('click', function(e) {
       e.preventDefault();
       $.showGlobalSpinnerNode();
+      last_data = $.retrieveState();
       $('.unlayered,.annotator-hl').show();
       $('.unlayered-border-start,.unlayered-border-end,.unlayered-ellipsis,.layered-control,.layered-ellipsis').remove();
-      last_data = $.retrieveState();
       $.each($('#layers_highlights a'), function(i, el) {
         if($(el).text().match(/^UNHIGHLIGHT/)) {
           $(el).click();
@@ -244,10 +244,10 @@ $.extend({
       heatmap_display = true;
       st_annotator.plugins.H2O.loadAnnotations();
       $.highlightHeatmap();
-      $('#heatmap_toggle').addClass('disabled');
+      $('#heatmap_toggle').addClass('activated');
       $.hideGlobalSpinnerNode();
     });
-    $('#heatmap_toggle.disabled').live('click', function(e) {
+    $('#heatmap_toggle.activated').live('click', function(e) {
       e.preventDefault();
       $.showGlobalSpinnerNode();
       var stored_annotations = st_annotator.dumpAnnotations();
@@ -260,7 +260,7 @@ $.extend({
       annotations = original_annotations; 
       heatmap_display = false;
       $('#text-layer-tools').removeClass('inactive').css('opacity', 1.0);
-      $('#heatmap_toggle').removeClass('disabled');
+      $('#heatmap_toggle').removeClass('activated');
 	    $.rule('.annotator-wrapper .annotator-hl', '#additional_styles').remove();
       st_annotator.plugins.H2O.setUnlayeredAll();
       $.rehighlight();
@@ -409,9 +409,8 @@ $.extend({
     });
     $('form#collage_print').submit(function() {
       var data = $.retrieveState();
- 
-      //Note: is:visible not working here
-      if($('a#hide_heatmap').css('display') == 'block' && !$('a#hide_heatmap:first').is('.inactive')) {
+
+      if($('#heatmap_toggle').hasClass('activated')) {
         data.load_heatmap = true;
       }
 

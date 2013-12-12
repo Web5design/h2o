@@ -20,9 +20,6 @@ function H2O(element, categories) {
 
 H2O.prototype.pluginInit = function() {
   var h2o_annotator = this;
-  //h2o_annotator.annotator.plugins.Store.loadAnnotations = function() {
-  //  console.log('test test');
-  //};
   this.annotator.viewer.addField = function(options) {
     var field;
     field = $.extend({
@@ -186,7 +183,7 @@ H2O.prototype.manageNewLayers = function(annotation, data) {
   // #layers li[data-name='required'] is empty
   // Add to highlight and hide in navigation
 
-  if(annotation.new_layer_list.length > 0) {
+  if(annotation.new_layer_list !== undefined && annotation.new_layer_list.length > 0) {
     _this.annotator.editor.element.find('.annotator-h2o_layer_button').remove();
     _this.annotator.editor.fields.pop();
     $.each(annotation.new_layer_list, function(i, el) {

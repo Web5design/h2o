@@ -1181,7 +1181,7 @@ ul.user_captcha > li p.inline-errors { display: none; }
   height: 25px;
 }
 #singleitem_barcode_toolbar a#heatmap_toggle.inactive,
-#singleitem_barcode_toolbar a#heatmap_toggle.disabled {
+#singleitem_barcode_toolbar a#heatmap_toggle.activated {
   opacity: 0.3;
 }
 
