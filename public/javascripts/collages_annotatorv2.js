@@ -8,15 +8,22 @@ var layer_info = {};
 var last_annotation = 0;
 var annotation_position = 0;
 var head_offset;
-var heatmap;
 var clean_annotations = {};
 var clean_collage_links = {};
 var unlayered_tts;
 var update_unlayered_end = 0;
+var collage_id;
+var heatmap_display = false;
+var original_annotations;
 
-jQuery.extend({
+$.extend({
+  highlightHeatmap: function() {
+    $('.layered-empty').removeClass('layered-empty');
+
+	  $.rule('.annotator-wrapper .annotator-hl { background-color: rgba(255,0,0,0.3); }').appendTo('#additional_styles');
+  },
   rehighlight: function() {
-	  jQuery('.layered-empty').removeClass('layered-empty');
+	  $('.layered-empty').removeClass('layered-empty');
 	  var total_selectors = new Array();
 	  $.each($('.annotator-wrapper .annotator-hl'), function(i, child) {
 	    var this_selector = '';
@@ -69,39 +76,39 @@ jQuery.extend({
 	      }
 	      var current_hex = '#FFFFFF';
 	      var key_length = 0;
-	      jQuery.each(unique_layers, function(key, value) {
+	      $.each(unique_layers, function(key, value) {
 	        key_length++;
 	      });
 	      var opacity = 0.4 / key_length;
-	      jQuery.each(unique_layers, function(key, value) {
-	        var color_combine = jQuery.xcolor.opacity(current_hex, layer_data[key], opacity);
+	      $.each(unique_layers, function(key, value) {
+	        var color_combine = $.xcolor.opacity(current_hex, layer_data[key], opacity);
 	        current_hex = color_combine.getHex();
 	      });
-	      jQuery.rule(selector + ' { background-color: ' + current_hex + '; }').appendTo('#additional_styles');
+	      $.rule(selector + ' { background-color: ' + current_hex + '; }').appendTo('#additional_styles');
 	      updated[selector] = 1;
 	    }
 	  }
 	  var keys_arr = new Array();
-	  jQuery.each(updated, function(key, value) {
+	  $.each(updated, function(key, value) {
 	    keys_arr.push(key);
 	  });
     if(keys_arr.length > 0) {
-	    jQuery('.annotator-hl:not(' + keys_arr.join(',') + '):not(' + keys_arr.join(',') + '> .annotator-hl)').addClass('layered-empty');
+	    $('.annotator-hl:not(' + keys_arr.join(',') + '):not(' + keys_arr.join(',') + '> .annotator-hl)').addClass('layered-empty');
     } else {
-      jQuery('.annotator-hl').addClass('layered-empty');
+      $('.annotator-hl').addClass('layered-empty');
     }
   },
   observeDeleteInheritedAnnotations: function () {
-    jQuery('#delete_inherited_annotations').live('click', function(e) {
+    $('#delete_inherited_annotations').live('click', function(e) {
       e.preventDefault();
 
-      jQuery.ajax({
+      $.ajax({
         type: 'GET',
         cache: false,
         dataType: 'JSON',
-        url: jQuery.rootPath() + 'collages/' + jQuery.getItemId() + '/delete_inherited_annotations',
+        url: $.rootPath() + 'collages/' + $.getItemId() + '/delete_inherited_annotations',
         beforeSend: function(){
-          jQuery.showGlobalSpinnerNode();
+          $.showGlobalSpinnerNode();
         },
         success: function(data){
           var stored_annotations = st_annotator.dumpAnnotations();
@@ -110,18 +117,19 @@ jQuery.extend({
               st_annotator.specialDeleteAnnotation(a);
             }
           });
-          jQuery.updateWordCount();
-          jQuery.hideGlobalSpinnerNode();
+          $.updateWordCount();
+          $.hideGlobalSpinnerNode();
           $('#inherited_h,#inherited_span').remove();
         },
         error: function() {
-          jQuery.hideGlobalSpinnerNode();
+          $.hideGlobalSpinnerNode();
         }
       });
     });
   },
   initiate_annotator: function(can_edit) {
-    jQuery('div.article').annotator({ readOnly: !can_edit }).annotator('addPlugin', 'H2O', layer_data).annotator('addPlugin', 'Store', {
+    collage_id = $.getItemId(); 
+    $('div.article').annotator({ readOnly: !can_edit }).annotator('addPlugin', 'H2O', layer_data).annotator('addPlugin', 'Store', {
       prefix: '/annotations',
       urls: {
         create: '/create',
@@ -133,167 +141,144 @@ jQuery.extend({
     });
   },
   collage_afterload: function(results) {
-    last_data = jQuery.parseJSON(results.readable_state);
+    last_data = $.parseJSON(results.readable_state);
     if(results.can_edit_annotations) {
-      jQuery.initiate_annotator(true);  
-      jQuery('.requires_edit').animate({ opacity: 1.0 });
+      $.initiate_annotator(true);  
+      $('.requires_edit').animate({ opacity: 1.0 });
     } else {
-      jQuery.initiate_annotator(false);  
-      jQuery('.requires_edit').remove();
+      $.initiate_annotator(false);  
+      $('.requires_edit').remove();
     }
     if(results.can_edit_description) {
-      jQuery('.edit-action').animate({ opacity: 1.0 });
+      $('.edit-action').animate({ opacity: 1.0 });
     } else {
-      jQuery('.edit-action').remove();
+      $('.edit-action').remove();
     }
   },
   slideToParagraph: function() {
     if(document.location.hash.match(/^#p[0-9]+/)) {
       var p = document.location.hash.match(/[0-9]+/);
-      var paragraph = jQuery('#paragraph' + p);
+      var paragraph = $('#paragraph' + p);
       var pos = paragraph.offset().top;
-      jQuery(window).scrollTop(pos);
+      $(window).scrollTop(pos);
     }
   },
   observeStatsHighlights: function() {
-    jQuery('#stats').hover(function() {
-      jQuery(this).addClass('stats_hover');
+    $('#stats').hover(function() {
+      $(this).addClass('stats_hover');
     }, function() {
-      jQuery(this).removeClass('stats_hover');
+      $(this).removeClass('stats_hover');
     });
   },
   updateLayerCount: function() {
-    jQuery('#stats_layer_size').html(jQuery('#layers li').size());
+    $('#stats_layer_size').html($('#layers li').size());
   },
   updateAnnotationCount: function() {
-    //jQuery('#stats_annotation_size').html(# of annotations);
+    //$('#stats_annotation_size').html(# of annotations);
   },
   observeFootnoteLinks: function() {
-    jQuery.each(jQuery('.article a.footnote'), function(i, el) {
-      jQuery(el).attr('href', unescape(jQuery(el).attr('href')));
-      jQuery(el).attr('name', unescape(jQuery(el).attr('name')));
+    $.each($('.article a.footnote'), function(i, el) {
+      $(el).attr('href', unescape($(el).attr('href')));
+      $(el).attr('name', unescape($(el).attr('name')));
     });
-    jQuery('.article a.footnote').click(function() {
-      var href = jQuery(this).attr('href').replace('#', '');
-      var link = jQuery("article a[name='" + href + "']");
+    $('.article a.footnote').click(function() {
+      var href = $(this).attr('href').replace('#', '');
+      var link = $("article a[name='" + href + "']");
       if(link.size()) {
         var pos = link.offset().top;
-        jQuery(window).scrollTop(pos - 150);
+        $(window).scrollTop(pos - 150);
       }
       return false;
     });
   },
   getHexes: function() {
-    var hexes = jQuery('<div class="hexes"></div>');
-    jQuery.each(color_list, function(i, item) {
-      var node = jQuery('<a href="#"></a>').data('value', item.hex).css({ 'background' : '#' + item.hex });
+    var hexes = $('<div class="hexes"></div>');
+    $.each(color_list, function(i, item) {
+      var node = $('<a href="#"></a>').data('value', item.hex).css({ 'background' : '#' + item.hex });
       if($('#layers_highlights li[data-hex="' + item.hex + '"]').size()) {
-        node = jQuery('<span>').addClass('inactive').css({ 'background' : '#' + item.hex });
+        node = $('<span>').addClass('inactive').css({ 'background' : '#' + item.hex });
       }
       hexes.append(node);
     });
     return hexes;
   },
   observeLayerColorMapping: function() {
-    jQuery('.hexes a').live('click', function() {
-      if(jQuery(this).hasClass('inactive')) {
+    $('.hexes a').live('click', function() {
+      if($(this).hasClass('inactive')) {
         return false;
       }
-      jQuery(this).parent().siblings('.hex_input').find('input').val(jQuery(this).data('value'));
-      jQuery(this).siblings('a.active').removeClass('active');
-      jQuery(this).addClass('active');
+      $(this).parent().siblings('.hex_input').find('input').val($(this).data('value'));
+      $(this).siblings('a.active').removeClass('active');
+      $(this).addClass('active');
       return false;
     });
-    jQuery('#add_new_layer').live('click', function() {
-      var new_layer = jQuery('<li class="annotator-item annotator-h2o_layer"><p>Enter Layer Name <input type="text" name="new_layer" /></p><p class="hex_input">Choose a Color<input type="hidden" name="new_layer_list[][hex]" /></p><a href="#" class="remove_layer">Cancel &raquo;</a></div>');
-      var hexes = jQuery.getHexes();
+    $('#add_new_layer').live('click', function() {
+      var new_layer = $('<li class="annotator-item annotator-h2o_layer"><p>Enter Layer Name <input type="text" name="new_layer" /></p><p class="hex_input">Choose a Color<input type="hidden" name="new_layer_list[][hex]" /></p><a href="#" class="remove_layer">Cancel &raquo;</a></div>');
+      var hexes = $.getHexes();
       hexes.insertBefore(new_layer.find('.remove_layer'));
       new_layer.insertBefore($('.annotator-h2o_layer_button'));
       return false;
     });
-    jQuery('.remove_layer').live('click', function() {
-      jQuery(this).parent().remove();
+    $('.remove_layer').live('click', function() {
+      $(this).parent().remove();
       return false;
     });
   },
-  removeHeatmapHighlights: function() {
-    jQuery.each(heatmap.data, function(i, e) {
-      jQuery('tt#' + i + '.heatmapped').css('background-color', '#FFFFFF').removeClass('heatmapped');
-    });
-  },
-  applyHeatmapHighlights: function() {
-    jQuery.each(heatmap.data, function(i, e) {
-      var opacity = e / (heatmap.max+1);
-      var color_combine = jQuery.xcolor.opacity('#FFFFFF', '#FE2A2A', opacity);
-      var hex = color_combine.getHex();
-      jQuery('tt#' + i).css('background-color', hex).addClass('heatmapped').data('collage_count', e);
-    });
-  },
   observeHeatmap: function() {
-    jQuery('tt.heatmapped').live('mouseover', function(e) {
-      var el = jQuery(this);
-      el.css('position', 'relative');
-      var heatmap_tip = jQuery('<a>')
-        .addClass('heatmap_tip')
-        .attr('title', 'Layered in ' + el.data('collage_count') + ' Collage(s)')
-        .tipsy({ trigger: 'manual', gravity: 's', opacity: 1.0 });
-      el.prepend(heatmap_tip);
-      heatmap_tip.tipsy("show");
-    }).live('mouseout', function(e) {
-      var el = jQuery(this);
-      el.css('position', 'static');
-      el.find('a.heatmap_tip').tipsy("hide");
-      el.find('a.heatmap_tip').remove();
-    });
-    jQuery('#heatmap_toggle:not(.inactive,.disabled)').live('click', function(e) {
+    $('#heatmap_toggle:not(.inactive,.disabled)').live('click', function(e) {
       e.preventDefault();
-      if(heatmap === undefined) {
-        jQuery.ajax({
-          type: 'GET',
-          cache: false,
-          dataType: 'JSON',
-          url: jQuery.rootPath() + 'collages/' + jQuery.getItemId() + '/heatmap',
-          beforeSend: function(){
-            jQuery.showGlobalSpinnerNode();
-          },
-          success: function(data){
-            jQuery('.popup .highlighted').click();
-            heatmap = data.heatmap;
-            jQuery.applyHeatmapHighlights();
-            jQuery('#heatmap_toggle').addClass('disabled');
-            jQuery.hideGlobalSpinnerNode();
-          },
-          error: function() {
-            jQuery.hideGlobalSpinnerNode();
-          }
-        });
-      } else {
-        jQuery('.popup .highlighted').click();
-        jQuery.applyHeatmapHighlights();
-        jQuery('#heatmap_toggle').addClass('disabled');
-        jQuery.hideGlobalSpinnerNode();
-      }
+      $.showGlobalSpinnerNode();
+      $('.unlayered,.annotator-hl').show();
+      $('.unlayered-border-start,.unlayered-border-end,.unlayered-ellipsis,.layered-control,.layered-ellipsis').remove();
+      last_data = $.retrieveState();
+      $.each($('#layers_highlights a'), function(i, el) {
+        if($(el).text().match(/^UNHIGHLIGHT/)) {
+          $(el).click();
+        }
+      });
+      $('span.unlayered-added').contents().unwrap();
+      $('.unlayered').removeClass('unlayered');
+      $('#text-layer-tools').addClass('inactive').css('opacity', 0.3);
+      original_annotations = annotations;
+      annotations = heatmap;
+      heatmap_display = true;
+      st_annotator.plugins.Store.loadAnnotationsH2O();
+      $.highlightHeatmap();
+      $('#heatmap_toggle').addClass('disabled');
+      $.hideGlobalSpinnerNode();
     });
-    jQuery('#heatmap_toggle.disabled').live('click', function(e) {
+    $('#heatmap_toggle.disabled').live('click', function(e) {
       e.preventDefault();
-      if(jQuery(this).hasClass('inactive')) {
-        return false;
-      }
-      jQuery.removeHeatmapHighlights();
-      jQuery('#heatmap_toggle').removeClass('disabled');
+      $.showGlobalSpinnerNode();
+      var stored_annotations = st_annotator.dumpAnnotations();
+      var collage_id = $.getItemId();
+      $.each(stored_annotations, function(_i, a) {
+        if(a.collage_id != collage_id) {
+          st_annotator.specialDeleteAnnotation(a);
+        }
+      });
+      annotations = original_annotations; 
+      heatmap_display = false;
+      $('#text-layer-tools').removeClass('inactive').css('opacity', 1.0);
+      $('#heatmap_toggle').removeClass('disabled');
+	    $.rule('.annotator-wrapper .annotator-hl', '#additional_styles').remove();
+      st_annotator.plugins.H2O.setUnlayeredAll();
+      $.rehighlight();
+      $.loadState();
+      $.hideGlobalSpinnerNode();
     });
   },
   hideShowUnlayeredOptions: function() {
-    var total = jQuery('.unlayered-ellipsis').size();
-    var shown = jQuery('.unlayered-ellipsis').filter(':visible').size();
+    var total = $('.unlayered-ellipsis').size();
+    var shown = $('.unlayered-ellipsis').filter(':visible').size();
     if(total == shown) {
-      jQuery('#hide_unlayered').hide();
-      jQuery('#show_unlayered').show();
+      $('#hide_unlayered').hide();
+      $('#show_unlayered').show();
     } else if(shown == 0) {
-      jQuery('#hide_unlayered').show();
-      jQuery('#show_unlayered').hide();
+      $('#hide_unlayered').show();
+      $('#show_unlayered').hide();
     } else {
-      jQuery('#show_unlayered,#hide_unlayered').show();
+      $('#show_unlayered,#hide_unlayered').show();
     } 
   },
   addCommas: function(str) {
@@ -308,79 +293,82 @@ jQuery.extend({
     return x1 + x2;
   },
   observeToolListeners: function () {
-    jQuery("#collage #buttons a.btn-a:not(.btn-a-active)").live('click', function(e) {
+    $("#buttons a.btn-a:not(.btn-a-active)").live('click', function(e) {
       e.preventDefault();
-      var top_pos = jQuery(this).position().top + jQuery(this).height() + 10;
-      var left_pos = jQuery(this).width() - 208;
-      jQuery('.text-layers-popup').css({ position: 'absolute', top: top_pos, left: left_pos, "z-index": 1 }).fadeIn(200);
-      jQuery(this).addClass("btn-a-active");
+      if($(this).hasClass('inactive')) {
+        return;
+      }
+      var top_pos = $(this).position().top + $(this).height() + 10;
+      var left_pos = $(this).width() - 208;
+      $('.text-layers-popup').css({ position: 'absolute', top: top_pos, left: left_pos, "z-index": 1 }).fadeIn(200);
+      $(this).addClass("btn-a-active");
     });
-    jQuery("#collage #buttons a.btn-a-active").live('click', function(e) {
+    $("#buttons a.btn-a-active").live('click', function(e) {
       e.preventDefault();
-      jQuery('.text-layers-popup').fadeOut(200);
-      jQuery(this).removeClass("btn-a-active");
+      $('.text-layers-popup').fadeOut(200);
+      $(this).removeClass("btn-a-active");
     });
-    jQuery('#quickbar_tools:not(.active)').live('click', function(e) {
+    $('#quickbar_tools:not(.active)').live('click', function(e) {
       e.preventDefault();
-      var top_pos = jQuery(this).position().top + jQuery(this).height() + 8;
-      var left_pos = jQuery(this).position().left - 198 + jQuery(this).width();
-      jQuery('.text-layers-popup').css({ position: 'fixed', top: top_pos, left: left_pos, "z-index": 5 }).fadeIn(200);
-      jQuery(this).addClass('active');
+      var top_pos = $(this).position().top + $(this).height() + 8;
+      var left_pos = $(this).position().left - 198 + $(this).width();
+      $('.text-layers-popup').css({ position: 'fixed', top: top_pos, left: left_pos, "z-index": 5 }).fadeIn(200);
+      $(this).addClass('active');
     });
-    jQuery('#quickbar_tools.active').live('click', function(e) {
+    $('#quickbar_tools.active').live('click', function(e) {
       e.preventDefault();
-      jQuery('.text-layers-popup').fadeOut(200);
-      jQuery(this).removeClass('active');
+      $('.text-layers-popup').fadeOut(200);
+      $(this).removeClass('active');
     });
-    jQuery('#layers li').each(function(i, el) {
-      layer_info[jQuery(el).data('id')] = {
-        'hex' : jQuery(el).data('hex'),
-        'name' : jQuery(el).data('name')
+    $('#layers li').each(function(i, el) {
+      layer_info[$(el).data('id')] = {
+        'hex' : $(el).data('hex'),
+        'name' : $(el).data('name')
       };
-      jQuery('span.annotation-control-' + jQuery(el).data('id')).css('background', '#' + jQuery(el).data('hex'));
+      $('span.annotation-control-' + $(el).data('id')).css('background', '#' + $(el).data('hex'));
     });
-    jQuery('#author_edits').click(function(e) {
+    $('#author_edits').click(function(e) {
       e.preventDefault();
       last_data = original_data;
-      jQuery('.unlayered,.annotator-hl').show();
-      jQuery.loadState();
+      $('.unlayered,.annotator-hl').show();
+      $.loadState();
     });
-    jQuery('#full_text').click(function(e) {
+    $('#full_text').click(function(e) {
       e.preventDefault();
-      jQuery.showGlobalSpinnerNode();
-      jQuery('.unlayered,.annotator-hl').show();
-      jQuery('.unlayered-border-start,.unlayered-border-end,.unlayered-ellipsis,.layered-control,.layered-ellipsis').hide();
-      jQuery.each(jQuery('#layers a.hide_show'), function(i, el) {
-        jQuery(el).html('HIDE "' + jQuery(el).parent().data('name') + '"');
+      $.showGlobalSpinnerNode();
+      $('.unlayered,.annotator-hl').show();
+      $('.unlayered-border-start,.unlayered-border-end,.unlayered-ellipsis,.layered-control,.layered-ellipsis').hide();
+      $.each($('#layers a.hide_show'), function(i, el) {
+        $(el).html('HIDE "' + $(el).parent().data('name') + '"');
       });
-      //jQuery('#layers a.shown').removeClass('shown');
-      jQuery.hideShowUnlayeredOptions();
-      jQuery.hideGlobalSpinnerNode();
+      //$('#layers a.shown').removeClass('shown');
+      $.hideShowUnlayeredOptions();
+      $.hideGlobalSpinnerNode();
     });
 
-    jQuery('#show_unlayered a').click(function(e) {
+    $('#show_unlayered a').click(function(e) {
       e.preventDefault();
-      jQuery.showGlobalSpinnerNode();
+      $.showGlobalSpinnerNode();
       $('.unlayered,.unlayered-border-start,.unlayered-border-end').show();
       $('.unlayered-ellipsis').hide();
-      jQuery.hideShowUnlayeredOptions();
-      jQuery.hideGlobalSpinnerNode();
+      $.hideShowUnlayeredOptions();
+      $.hideGlobalSpinnerNode();
     });
-    jQuery('#hide_unlayered a').click(function(e) {
+    $('#hide_unlayered a').click(function(e) {
       e.preventDefault();
-      jQuery.showGlobalSpinnerNode();
+      $.showGlobalSpinnerNode();
       $('.unlayered,.unlayered-border-start,.unlayered-border-end').hide();
       $('.unlayered-ellipsis').show();
-      jQuery.hideShowUnlayeredOptions();
-      jQuery.hideGlobalSpinnerNode();
+      $.hideShowUnlayeredOptions();
+      $.hideGlobalSpinnerNode();
     });
 
-    jQuery('#layers .hide_show').live('click', function(e) {
+    $('#layers .hide_show').live('click', function(e) {
       e.preventDefault();
-      jQuery.showGlobalSpinnerNode();
+      $.showGlobalSpinnerNode();
 
       var el = $(this);
-      var layer = jQuery(this).parent().data('name');;
+      var layer = $(this).parent().data('name');;
       if(el.html().match("SHOW ")) {
         $('.layer-' + layer).show();
         $('.layered-ellipsis.layer-' + layer).hide();
@@ -391,13 +379,13 @@ jQuery.extend({
         el.html('SHOW "' + layer + '"');
       }
 
-      jQuery.hideGlobalSpinnerNode();
+      $.hideGlobalSpinnerNode();
     });
 
-    jQuery('#layers_highlights .link-o').live('click', function(e) {
+    $('#layers_highlights .link-o').live('click', function(e) {
       e.preventDefault();
-      var layer = jQuery(this).parent().data('name');
-      var hex = jQuery(this).parent().data('hex');
+      var layer = $(this).parent().data('name');
+      var hex = $(this).parent().data('hex');
         
       var text_node = $(($(this).contents())[0]);
       var new_node;
@@ -411,35 +399,25 @@ jQuery.extend({
         new_node = document.createTextNode('HIGHLIGHT "' + layer + '"');
       }
       text_node.replaceWith(new_node);
-      jQuery.rehighlight();
+      $.rehighlight();
     });
   },
   observePrintListeners: function() {
-    jQuery('#fixed_print,#quickbar_print').click(function(e) {
+    $('#fixed_print,#quickbar_print').click(function(e) {
       e.preventDefault();
-      jQuery('#collage_print').submit();
+      $('#collage_print').submit();
     });
-    jQuery('form#collage_print').submit(function() {
-      var state = jQuery.retrieveState();
+    $('form#collage_print').submit(function() {
+      var data = $.retrieveState();
  
-      var data = {
-        state: jQuery.retrieveState(),
-        highlights: {}
-      };
-      jQuery.each(jQuery('.link-o'), function(i, el) {
-        if($(el).text().match('UNHIGHLIGHT')) {
-          data.highlights[jQuery(el).parent().data('name')] = jQuery(el).parent().data('hex');
-        }
-      });
-
       //Note: is:visible not working here
-      if(jQuery('a#hide_heatmap').css('display') == 'block' && !jQuery('a#hide_heatmap:first').is('.inactive')) {
+      if($('a#hide_heatmap').css('display') == 'block' && !$('a#hide_heatmap:first').is('.inactive')) {
         data.load_heatmap = true;
       }
 
-      data.font_size = jQuery('#fontsize a.active').data('value');
-      data.font_face = jQuery('#fontface a.active').data('value');
-      jQuery('#state').val(JSON.stringify(data));
+      data.font_size = $('#fontsize a.active').data('value');
+      data.font_face = $('#fontface a.active').data('value');
+      $('#state').val(JSON.stringify(data));
     });
   },
   recordCollageState: function(data, show_message) {
@@ -454,17 +432,17 @@ jQuery.extend({
       words_shown += c.split( /\s+/ ).length;
     }
 
-    jQuery.ajax({
+    $.ajax({
       type: 'POST',
       cache: false,
       data: {
         readable_state: data,
         words_shown: words_shown
       },
-      url: jQuery.rootPath() + 'collages/' + jQuery.getItemId() + '/save_readable_state',
+      url: $.rootPath() + 'collages/' + $.getItemId() + '/save_readable_state',
       success: function(results){
         //if(show_message) {
-          //jQuery('#autosave').html('Updated at: ' + results.time);
+          //$('#autosave').html('Updated at: ' + results.time);
         //}
       }
     });
@@ -482,60 +460,67 @@ jQuery.extend({
       layered = c.split( /\s+/ ).length;
     }
 
-    jQuery('#word_stats').html(layered + ' layered, ' + unlayered + ' unlayered');
+    $('#word_stats').html(layered + ' layered, ' + unlayered + ' unlayered');
   },
   retrieveState: function() {
-    var data = new Array();
-    jQuery('.unlayered-ellipsis:visible').each(function(i, el) {
-      data.push('unlayered_' + jQuery(el).data('unlayered'));
+    var data = { highlights: {} };
+    $('.unlayered-ellipsis:visible').each(function(i, el) {
+      data['unlayered_' + $(el).data('unlayered')] = $(el).data('unlayered');
     });
-    jQuery('.layered-ellipsis:visible').each(function(i, el) {
-      data.push('layered_' + jQuery(el).data('layered'));
+    $('.layered-ellipsis:visible').each(function(i, el) {
+      data['layered_' + $(el).data('layered')] = $(el).data('layered');
     });
+    $.each($('.link-o'), function(i, el) {
+      if($(el).text().match('UNHIGHLIGHT')) {
+        data.highlights[$(el).parent().data('name')] = $(el).parent().data('hex');
+      }
+    });
+
     return data;
   },
   listenToRecordCollageState: function() {
     setInterval(function(i) {
-      var data = jQuery.retrieveState();
+      if(heatmap_display) {
+        return;
+      }
+      var data = $.retrieveState();
       if(JSON.stringify(data) != JSON.stringify(last_data)) {
         last_data = data;
-        jQuery.recordCollageState(JSON.stringify(data), true);
+        $.recordCollageState(JSON.stringify(data), true);
       }
     }, 1000); 
   },
   loadState: function() {
-    jQuery.each(last_data, function(i, e) {
-      if(e.match(/^unlayered/)) {
-        var _i = e.replace(/^unlayered_/, '');
-        $('.unlayered-' + _i).hide();
-        $('.unlayered-ellipsis-' + _i).show();
-      } else if(e.match(/^layered/)) {
-        var _i = e.replace(/^layered_/, '');
-        $('.annotation-' + _i).hide();
-        $('.layered-ellipsis-' + _i).show();
+    $.each(last_data, function(i, e) {
+      if(i.match(/^unlayered/)) {
+        $('.unlayered-' + e).hide();
+        $('.unlayered-ellipsis-' + e).show();
+      } else if(i.match(/^layered/)) {
+        $('.annotation-' + e).hide();
+        $('.layered-ellipsis-' + e).show();
+      } else if(i.match(/^highlights/)) {
+        $.each(e, function(j, k) {
+          $("ul#layers_highlights li[data-name='" + j + "'] a").click();
+        });
       }
     });
-    jQuery.hideShowUnlayeredOptions();
+    $.hideShowUnlayeredOptions();
     if(access_results.can_edit_annotations) {
-      jQuery('#edit_toggle').click();
-      jQuery.toggleEditMode(true);
-      jQuery('.default-hidden').css('color', '#000');
-      jQuery('#heatmap_toggle').addClass('inactive');
+      $('#edit_toggle').click();
+      $('.default-hidden').css('color', '#000');
     } else {
-      jQuery('#heatmap_toggle').removeClass('inactive');
-      jQuery.toggleEditMode(false);
-      jQuery.checkForPanelAdjust();
+      $.checkForPanelAdjust();
     }
-    if(jQuery.cookie('scroll_pos')) {
-      jQuery(window).scrollTop(jQuery.cookie('scroll_pos'));
-      jQuery.cookie('scroll_pos', null);
+    if($.cookie('scroll_pos')) {
+      $(window).scrollTop($.cookie('scroll_pos'));
+      $.cookie('scroll_pos', null);
     }
   }, 
   markupCollageLink: function(collage_link) {
     var nodes = new Array();
-    var previous_element = jQuery('tt#' + collage_link.link_text_start).prev();
-    var current_node = jQuery('tt#' + collage_link.link_text_start);
-    var link_node = jQuery('<a class="collage-link" href="/collages/' + collage_link.linked_collage_id + '"></a>');
+    var previous_element = $('tt#' + collage_link.link_text_start).prev();
+    var current_node = $('tt#' + collage_link.link_text_start);
+    var link_node = $('<a class="collage-link" href="/collages/' + collage_link.linked_collage_id + '"></a>');
     var i = 0;
     //all_tts.size() is used to prevent infinite loop here
     while(current_node.attr('id') != collage_link.link_text_end && i < all_tts.size()) {
@@ -544,7 +529,7 @@ jQuery.extend({
       i++;
     }
     nodes.push(current_node); //Last element
-    jQuery.each(nodes, function(i, el) {
+    $.each(nodes, function(i, el) {
       el.detach;
       link_node.append(el);
     });
@@ -553,131 +538,50 @@ jQuery.extend({
     clean_collage_links["c" + collage_link.id] = collage_link;
   },
   resetParentDisplay: function(els) {
-    var parents = els.parentsUntil('#collage div.article');
+    var parents = els.parentsUntil('div.article');
     parents.removeClass('no_visible_children');
     parents.filter(':not(:has(.layered-control,.control-divider,.unlayered-ellipsis:visible,tt:visible))').addClass('no_visible_children');
   },
-  submitAnnotation: function(){
-    var values = new Array();
-    jQuery(".layer_check input").each(function(i, el) {
-      if(jQuery(el).attr('checked')) {
-        values.push(jQuery(el).data('value'));
-      }
-    });
-    jQuery('#annotation_layer_list').val(jQuery('#new_layers input').val() + ',' + values.join(','));
-
-    jQuery('form.annotation').ajaxSubmit({
-      error: function(xhr){
-        jQuery.hideGlobalSpinnerNode();
-        jQuery('#new-annotation-error').show().append(xhr.responseText);
-      },
-      beforeSend: function(){
-        jQuery.cookie('scroll_pos', annotation_position);
-        jQuery.showGlobalSpinnerNode();
-        jQuery('div.ajax-error').html('').hide();
-        jQuery('#new-annotation-error').html('').hide();
-      },
-      success: function(response){
-        jQuery.hideGlobalSpinnerNode();
-        var annotation = jQuery.parseJSON(response.annotation);
-        var color_map = jQuery.parseJSON(response.color_map);
-        jQuery('#edit_item div.dynamic').html('').hide();
-        if(response.type == "update") {
-          jQuery.editAnnotationMarkup(annotation.annotation, color_map);
-        } else {
-          jQuery.markupAnnotation(annotation.annotation, color_map, false);
-        }
-        jQuery('#edit_item').append(jQuery('<div>').attr('id', 'status_message').html('Collage Edited'));
-      }
-    });
-  },
-
-  toggleAnnotation: function(id) {
-    if(jQuery('#annotation-content-' + id).css('display') == 'inline-block') {
-      jQuery('#annotation-content-' + id).css('display', 'none');
-    } else {
-      jQuery('#annotation-content-' + id).css('display', 'inline-block');
-    }
-  },
-
-  annotationButton: function(annotationId){
-    var collageId = jQuery.getItemId();
-    if(jQuery('#annotation-details-' + annotationId).length == 0){
-      jQuery.ajax({
-        type: 'GET',
-        cache: false,
-        url: jQuery.rootPath() + 'annotations/' + annotationId,
-        beforeSend: function(){
-          jQuery.showGlobalSpinnerNode();
-          jQuery('div.ajax-error').html('').hide();
-        },
-        error: function(xhr){
-          jQuery.hideGlobalSpinnerNode();
-          jQuery('div.ajax-error').show().append(xhr.responseText);
-        },
-        success: function(html){
-          jQuery('#edit_item #status_message').remove();
-          jQuery.hideGlobalSpinnerNode();
-          jQuery('#annotation_edit .dynamic').css('padding', '2px 0px 0px 0px').html(html).show();
-
-          if(access_results.can_edit_annotations) {
-            jQuery('#edit_item #annotation_edit .tabs a').show();
-          }
-        }
-      });
-    } else {
-      jQuery('#annotation-details-' + annotationId).dialog('open');
-    }
-  },
-  toggleEditMode: function(highlight) {
-    if(highlight) {
-      jQuery('#collage div.article').addClass('edit_mode');
-    } else {
-      jQuery('#collage div.article').removeClass('edit_mode');
-    }
-  },
-
   initPlaylistItemAddButton: function(){
-    jQuery('.add-collage-button').live('click', function(e) {
+    $('.add-collage-button').live('click', function(e) {
       e.preventDefault();
-      var link_start = jQuery('input[name=link_start]').val();
-      var link_end = jQuery('input[name=link_end]').val();
-      var host_collage = jQuery('input[name=host_collage]').val();
-      var itemId = jQuery(this).attr('id').split('-')[1];
-      jQuery.submitCollageLink(itemId, link_start, link_end, host_collage);
+      var link_start = $('input[name=link_start]').val();
+      var link_end = $('input[name=link_end]').val();
+      var host_collage = $('input[name=host_collage]').val();
+      var itemId = $(this).attr('id').split('-')[1];
+      $.submitCollageLink(itemId, link_start, link_end, host_collage);
     });
   },
-
   initKeywordSearch: function(){
-    jQuery('#link_search').live('click', function(e) {
+    $('#link_search').live('click', function(e) {
       e.preventDefault();
-      jQuery.ajax({
+      $.ajax({
         method: 'GET',
-        url: jQuery.rootPath() + 'collage_links/embedded_pager',
+        url: $.rootPath() + 'collage_links/embedded_pager',
         beforeSend: function(){
-           jQuery.showGlobalSpinnerNode();
+           $.showGlobalSpinnerNode();
         },
         data: {
-            keywords: jQuery('#collage-keyword-search').val(),
-            link_start: jQuery('#edit_item input[name=link_start]').val(),
-            link_end: jQuery('#edit_item input[name=link_end]').val(),
-            host_collage: jQuery('#edit_item input[name=host_collage]').val(),
-            text: jQuery('#edit_item input[name=text]').val()
+            keywords: $('#collage-keyword-search').val(),
+            link_start: $('#edit_item input[name=link_start]').val(),
+            link_end: $('#edit_item input[name=link_end]').val(),
+            host_collage: $('#edit_item input[name=host_collage]').val(),
+            text: $('#edit_item input[name=text]').val()
         },
         dataType: 'html',
         success: function(html){
-          jQuery.hideGlobalSpinnerNode();
-          jQuery('#link_edit .dynamic').html(html);
+          $.hideGlobalSpinnerNode();
+          $('#link_edit .dynamic').html(html);
         },
         error: function(xhr){
-          jQuery.hideGlobalSpinnerNode();
+          $.hideGlobalSpinnerNode();
         }
       });
     });
   },
   
   submitCollageLink: function(linked_collage, link_start, link_end, host_collage){
-    jQuery.ajax({
+    $.ajax({
       type: 'POST',
       cache: false,
       data: {collage_link: {
@@ -687,74 +591,57 @@ jQuery.extend({
         link_text_end: link_end
         }
       },
-      url: jQuery.rootPath() + 'collage_links/create',
+      url: $.rootPath() + 'collage_links/create',
       success: function(results){
-        jQuery.hideGlobalSpinnerNode();
-        jQuery('#link_edit .dynamic,#annotation_edit .dynamic').hide().html('');
-        jQuery('#link_edit #search_wrapper_outer').hide();
-        jQuery('#edit_item').append(jQuery('<div>').attr('id', 'status_message').html('Link Created'));
-        jQuery.markupCollageLink(results.collage_link);
+        $.hideGlobalSpinnerNode();
+        $('#link_edit .dynamic,#annotation_edit .dynamic').hide().html('');
+        $('#link_edit #search_wrapper_outer').hide();
+        $('#edit_item').append($('<div>').attr('id', 'status_message').html('Link Created'));
+        $.markupCollageLink(results.collage_link);
       }
     });
   },
 
   openCollageLinkForm: function(url_path, data){
-    jQuery.ajax({
+    $.ajax({
       type: 'GET',
-      url: jQuery.rootPath() + url_path,
+      url: $.rootPath() + url_path,
       cache: false,
       beforeSend: function(){
-         jQuery.showGlobalSpinnerNode();
+         $.showGlobalSpinnerNode();
       },
       data: data,
       dataType: 'html',
       success: function(html){
-        jQuery.hideGlobalSpinnerNode();
-        jQuery('#link_edit .dynamic').html(html).show();
+        $.hideGlobalSpinnerNode();
+        $('#link_edit .dynamic').html(html).show();
       }
     });
   }
 });
 
-jQuery(document).ready(function(){
-  if(jQuery('.singleitem').length > 0){
-    jQuery.showGlobalSpinnerNode();
+$(document).ready(function(){
+  if($('.singleitem').length > 0){
+    $.showGlobalSpinnerNode();
 
-    jQuery.each(collage_links, function(i, el) {
+    $.each(collage_links, function(i, el) {
       clean_collage_links[i] = el.collage_link;
-      jQuery.markupCollageLink(clean_collage_links[i]);
+      $.markupCollageLink(clean_collage_links[i]);
     });
 
-    jQuery('.toolbar, #buttons').css('visibility', 'visible');
-    jQuery.observeToolListeners();
-    jQuery.observeLayerColorMapping();
-    jQuery.observePrintListeners();
+    $('.toolbar, #buttons').css('visibility', 'visible');
+    $.observeToolListeners();
+    $.observeLayerColorMapping();
+    $.observePrintListeners();
+    $.observeHeatmap();
+    $.observeDeleteInheritedAnnotations();
+    $.initKeywordSearch();
+    $.initPlaylistItemAddButton();
 
-    /*
-    jQuery.observeHeatmap();
-    */
-
-    jQuery.observeDeleteInheritedAnnotations();
-
-    /* Collage Search */
-    jQuery.initKeywordSearch();
-    jQuery.initPlaylistItemAddButton();
-
-    jQuery.observeFootnoteLinks();
-    jQuery.hideGlobalSpinnerNode();
-    jQuery.observeStatsHighlights();
-          
-
-    jQuery.slideToParagraph();
-
-/*
-    //Must be after onclicks initiated
-    if(jQuery.cookie('user_id') == null) {
-      access_results = { 'can_edit_annotations' : false };
-      last_data = original_data;
-      jQuery.loadState();
-    }
-*/
+    $.observeFootnoteLinks();
+    $.hideGlobalSpinnerNode();
+    $.observeStatsHighlights();
+    $.slideToParagraph();
   }
 });
 

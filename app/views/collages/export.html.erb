@@ -1,4 +1,4 @@
-<div id="collage<%= @collage.id %>" class="collage-content singleitem" data-id="<%= @collage.id %>">
+<div id="collage<%= @collage.id %>" class="collage-content singleitem" data-id="<%= @collage.id %>" data-annotator_version="<%= @collage.annotator_version %>">
   <h1 id="singlecollage" class="scale1-5"><%= @collage.name %></h1>
   <div class="details">
     <p class="info scale0-8"><%= @collage.updated_at.strftime("%B %d, %Y") %> by <%= link_to(@collage.user.display, user_path(@collage.user)) %></p>

@@ -77,7 +77,7 @@
 
     <%= javascript_include_tag 'jquery.min.js' %>
     <%= javascript_include_tag 'jquery-ui.min.js' %>
-    <%= javascript_include_tag 'fonts', 'jquery.selectbox-0.6.1.pack', 'jquery.rule.min', 'jquery.xcolor' %>
+    <%= javascript_include_tag 'fonts', 'jquery.selectbox-0.6.1.pack', 'jquery.rule.min', 'jquery.xcolor', 'export' %>
     <% [ @javascripts.blank? ? nil : @javascripts ].compact.flatten.each do |js| %>
     <%= javascript_include_tag js %>
     <% end -%>

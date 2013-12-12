@@ -28,13 +28,17 @@ H2O.prototype.pluginInit = function() {
     jQuery.updateWordCount();
   });
   this.annotator.subscribe("annotationsLoaded", function(annotations) {
+    if(heatmap_display) {
+      return;
+    }
+
     H2O.prototype.setUnlayeredAll();
     H2O.prototype.setLayeredBorders(annotations);
     jQuery.rehighlight();
     jQuery.hideShowUnlayeredOptions();
     jQuery.updateWordCount();
 
-    booya = h2o_annotator.annotator;
+    st_annotator = h2o_annotator.annotator;
     recorded_annotations = h2o_annotator.annotations;
 
     if(h2o_annotator.annotator.options.readOnly) {
@@ -129,6 +133,10 @@ H2O.prototype.updateMarkupNoid = function(annotation) {
 };
 
 H2O.prototype.manageLayerCleanup = function(_annotator, annotation, check_for_new) {
+  if(heatmap_display) {
+    return false;
+  }
+
   $.each($('#layers_highlights li'), function(i, el) {
     if($('span.layer-' + $(el).data('name')).size() == 0) {
       var found = false;
@@ -286,7 +294,7 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
             shifted_unlayered = next_node.data('unlayered');
           }
           if(contents[_j].nodeType == 3 && parent_count == 0) {
-            var updated = '<span class="delete-' + annotation.id + ' unlayered unlayered-' + shifted_unlayered + '" data-unlayered="' + shifted_unlayered + '">' + $(contents[_j]).text() + '</span>';
+            var updated = '<span class="delete-' + annotation.id + ' unlayered unlayered-added unlayered-' + shifted_unlayered + '" data-unlayered="' + shifted_unlayered + '">' + $(contents[_j]).text() + '</span>';
               $(contents[_j]).replaceWith(updated); 
             }
           }
@@ -303,7 +311,7 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
           var contents = $(annotation.highlights[_i]).contents();
           for(var _j = 0; _j < contents.length; _j++) {
             if(contents[_j].nodeType == 3) {
-              var updated = '<span class="delete-' + annotation.id + ' unlayered unlayered-' + add_unlayered + '" data-unlayered="' + add_unlayered + '">' + $(contents[_j]).text() + '</span>';
+              var updated = '<span class="delete-' + annotation.id + ' unlayered-added unlayered unlayered-' + add_unlayered + '" data-unlayered="' + add_unlayered + '">' + $(contents[_j]).text() + '</span>';
               $(contents[_j]).replaceWith(updated); 
             }
           }
@@ -316,7 +324,7 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
           var contents = $(annotation.highlights[_i]).contents();
           for(var _j = 0; _j < contents.length; _j++) {
             if(contents[_j].nodeType == 3) {
-              var updated = '<span class="delete-' + annotation.id + ' unlayered unlayered-' + shifted_unlayered + '" data-unlayered="' + shifted_unlayered + '">' + $(contents[_j]).text() + '</span>';
+              var updated = '<span class="delete-' + annotation.id + ' unlayered-added unlayered unlayered-' + shifted_unlayered + '" data-unlayered="' + shifted_unlayered + '">' + $(contents[_j]).text() + '</span>';
               $(contents[_j]).replaceWith(updated); 
             }
           }
@@ -332,7 +340,7 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
           var contents = $(annotation.highlights[_i]).contents();
           for(var _j = 0; _j < contents.length; _j++) {
             if(contents[_j].nodeType == 3) {
-              var updated = '<span class="delete-' + annotation.id + ' unlayered unlayered-' + shifted_unlayered + '" data-unlayered="' + shifted_unlayered + '">' + $(contents[_j]).text() + '</span>';
+              var updated = '<span class="delete-' + annotation.id + ' unlayered-added unlayered unlayered-' + shifted_unlayered + '" data-unlayered="' + shifted_unlayered + '">' + $(contents[_j]).text() + '</span>';
               $(contents[_j]).replaceWith(updated); 
             }
           }
@@ -340,7 +348,7 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
       }
       var first_unlayered = $('span.delete-' + annotation.id + ':first');
       $('<a href="#" class="unlayered-border-start unlayered-border-start-' + shifted_unlayered + '" data-unlayered="' + shifted_unlayered + '"></a>').insertBefore(first_unlayered);
-      $('<a href="#" class="unlayered-ellipsis unlayered-ellipsis-' + shifted_unlayered + '" data-unlayered="' + shifted_unlayered + '">...</a>').insertBefore(first_unlayered);
+      $('<a href="#" class="unlayered-ellipsis unlayered-ellipsis-' + shifted_unlayered + '" data-unlayered="' + shifted_unlayered + '">[...]</a>').insertBefore(first_unlayered);
       $('.unlayered-border-start-' + shifted_unlayered + ':last').remove();
       $('.unlayered-ellipsis-' + shifted_unlayered + ':last').remove();
     }
@@ -359,7 +367,7 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
       var start_node = $('.annotation-' + _id + ':first');
       var end_node = $('.annotation-' + _id + ':last');
       $('<a href="#" class="layered-border-start layered-border-start-' + _id + ' ' + layer_class + '" data-layered="' + _id + '"></a>').insertBefore(start_node);
-      $('<a href="#" class="layered-ellipsis layered-ellipsis-' + _id + ' ' + layer_class + '" data-layered="' + _id + '">...</a>').insertBefore(start_node);
+      $('<a href="#" class="layered-ellipsis layered-ellipsis-' + _id + ' ' + layer_class + '" data-layered="' + _id + '">[...]</a>').insertBefore(start_node);
       $('<a href="#" class="layered-border-end layered-border-end-' + _id + ' ' + layer_class + '" data-layered="' + _id + '"></a>').insertAfter(end_node);
     }
     $('.layered-ellipsis').off('click').on('click', function(e) {
@@ -387,7 +395,7 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
         var contents = $(parent_node).contents();
         for(var _j = 0; _j < contents.length; _j++) {
           if(contents[_j].nodeType == 3) {
-            var updated = '<span class="unlayered unlayered-' + unlayered_key + '" data-unlayered="' + unlayered_key + '">' + $(contents[_j]).text() + '</span>';
+            var updated = '<span class="unlayered-added unlayered unlayered-' + unlayered_key + '" data-unlayered="' + unlayered_key + '">' + $(contents[_j]).text() + '</span>';
             $(contents[_j]).replaceWith(updated); 
           }
         }
@@ -419,7 +427,7 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
       if(last_pos != (all_items.size() - 1)) {
         if(next_node.is('.unlayered')) {
           $('<a href="#" class="unlayered-border-start unlayered-border-start-' + end_unlayered + '" data-unlayered="' + end_unlayered + '"></a>').insertBefore(next_node);
-          $('<a href="#" class="unlayered-ellipsis unlayered-ellipsis-' + end_unlayered + '" data-unlayered="' + end_unlayered + '">...</a>').insertBefore(next_node);
+          $('<a href="#" class="unlayered-ellipsis unlayered-ellipsis-' + end_unlayered + '" data-unlayered="' + end_unlayered + '">[...]</a>').insertBefore(next_node);
           back_unlayered = true;
         }
       }
@@ -448,25 +456,27 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
   };
 
   H2O.prototype.setUnlayeredAll = function() {
-    $('.annotator-wrapper *:not(.annotator-hl):not(:has(.annotator-hl)):not(br):not(.paragraph-numbering)').addClass('unlayered');
-    $.each($('.annotator-wrapper *:not(.annotator-hl):has(.annotator-hl)'), function(i, el) {
+    var collage_selector = $('#collage' + collage_id);
+
+    collage_selector.find('.annotator-wrapper *:not(.annotator-hl):not(:has(.annotator-hl)):not(br):not(.paragraph-numbering)').addClass('unlayered');
+    $.each(collage_selector.find('.annotator-wrapper *:not(.annotator-hl):has(.annotator-hl)'), function(i, el) {
       if($(el).children(':not(.annotator-hl):has(.annotator-hl)').size() == 0) {
         var contents = $(el).contents();
         for(var _i = 0; _i < contents.length; _i++) {
           if(contents[_i].nodeType == 3) {
-            var updated = '<span class="unlayered">' + $(contents[_i]).text() + '</span>';
+            var updated = '<span class="unlayered unlayered-added">' + $(contents[_i]).text() + '</span>';
             $(contents[_i]).replaceWith(updated); 
           }
         }
       }
     });
-    $('.annotator-outer, .annotator-outer *,.annotator-adder, .annotator-adder *').removeClass('unlayered');
+    collage_selector.find('.annotator-outer,.annotator-outer *,.annotator-adder,.annotator-adder *').removeClass('unlayered');
     
     unlayered_count = 0;
     var set_unlayered = false;
-    var all_items = $('.annotator-hl,.unlayered');
+    var all_items = collage_selector.find('.annotator-hl,.unlayered');
     if($(all_items[0]).is('.unlayered')) {
-      $('<a href="#" class="unlayered-border-start unlayered-border-start-0" data-unlayered="0"></a><a href="#" class="unlayered-ellipsis unlayered-ellipsis-0" data-unlayered="0">...</a>').insertBefore($(all_items[0]));
+      $('<a href="#" class="unlayered-border-start unlayered-border-start-0" data-unlayered="0"></a><a href="#" class="unlayered-ellipsis unlayered-ellipsis-0" data-unlayered="0">[...]</a>').insertBefore($(all_items[0]));
       $(all_items[0]).addClass('unlayered-0').data('unlayered', 0);
     }
     for(var _i = 1; _i < all_items.size(); _i++) {
@@ -478,7 +488,7 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
       if(current_node.is('.unlayered') && prev_node.is('.annotator-hl')) {
         unlayered_count++;
         $('<a href="#" class="unlayered-border-start unlayered-border-start-' + unlayered_count + '" data-unlayered="' + unlayered_count + '"></a>').insertBefore(current_node);
-        $('<a href="#" class="unlayered-ellipsis unlayered-ellipsis-' + unlayered_count + '" data-unlayered="' + unlayered_count + '">...</a>').insertBefore(current_node);
+        $('<a href="#" class="unlayered-ellipsis unlayered-ellipsis-' + unlayered_count + '" data-unlayered="' + unlayered_count + '">[...]</a>').insertBefore(current_node);
       }
       if(current_node.is('.unlayered')) {
         current_node.addClass('unlayered-' + unlayered_count).data('unlayered', unlayered_count); 
@@ -536,6 +546,9 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
   };
 
   H2O.prototype.updateField = function(field, annotation) {
+    if(annotation.id == 'noid' && heatmap_display) {
+      $('#heatmap_toggle.disabled').click();
+    }
     if(annotation.category !== undefined && $.inArray(field.childNodes[0].id, annotation.category) != -1) {
       $(field).find('input').attr('checked', true);
     } else {
@@ -558,20 +571,36 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
     if($('#print-options').size() > 0) {
       return;
     }
+    if(heatmap_display) {
+      $('.annotator-controls').css('visibility', 'hidden');
+    } else {
+      $('.annotator-controls').css('visibility', 'visible');
+    }
 
     field = $(field);
     field.addClass('annotator-category');
     // TODO: Figure out why new annotations have layers listed twice, but for 
     // now, this handles the symptom
     var displayed = {};
+    if(heatmap_display) {
+      if(annotation.collage_id == $.getItemId()) {
+        field.append($('<h3>Current Collage</h3>'));
+      } else {
+        field.append($('<h3><a href="/collages/' + annotation.collage_id + '">Collage ' + annotation.collage_id + '</h3>'));
+      }
+    }
     if(annotation.category !== undefined) {
 	    for(_c = 0; _c < annotation.category.length; _c++) {
 	      if(displayed[layer_name] === undefined) {
 	        var layer_name = annotation.category[_c].replace(/layer-/, '');
-	        var hex = layer_data[layer_name];
-	        var color_combine = jQuery.xcolor.opacity('#FFFFFF', hex, 0.4);
-	        displayed[layer_name] = 1;
-	        field.append($('<span>').attr('style', 'background-color:' + color_combine.getHex()).html(layer_name));
+          if(annotation.collage_id == $.getItemId()) {
+	          var hex = layer_data[layer_name];
+	          var color_combine = jQuery.xcolor.opacity('#FFFFFF', hex, 0.4);
+	          displayed[layer_name] = 1;
+	          field.append($('<span>').attr('style', 'background-color:' + color_combine.getHex()).html(layer_name));
+          } else {
+	          field.append($('<span>').html(layer_name));
+          }
 	      }
 	    }
     }

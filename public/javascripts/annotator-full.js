@@ -1088,7 +1088,6 @@
     };
 
     Annotator.prototype.deleteAnnotation = function(annotation) {
-    console.log(annotation.highlights);
       this.publish('beforeAnnotationDeleted', [annotation]);
 
       var child, h, _k, _len2, _ref1;
@@ -1891,7 +1890,8 @@
         load: function() {}
       }, options);
       field.element = $('<div />')[0];
-      this.fields.push(field);
+      //H2O Custom: unshift versus push to prepend fields
+      this.fields.unshift(field);
       field.element;
       return this;
     };
@@ -2396,7 +2396,8 @@
           "text" : annotation.annotation,
           "ranges": ranges,
           "category": category,
-          "cloned": annotation.cloned
+          "cloned": annotation.cloned,
+          "collage_id" : annotation.collage_id
         };
         formatted_annotation.ranges = ranges;
         annotation_data.push(formatted_annotation);

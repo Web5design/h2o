@@ -12,7 +12,7 @@
 
 <aside id="singleitem_barcode_toolbar">
   <%= render :partial => "shared/barcode", :locals => { :object => @collage } %>
-  <a href="#" id="heatmap_toggle" title="Show Heatmap" class="link-heatmap tooltip<%= ' inactive' if @collage.annotations.inject(0) { |s, a| s + a.annotation_word_count.to_i } == 0 %>"><span class="icon icon-heatmap"><span>Show/Hide Heatmap</span></span></a>
+  <a href="#" id="heatmap_toggle" title="Show Heatmap" class="link-heatmap tooltip"><span class="icon icon-heatmap"><span>Show/Hide Heatmap</span></span></a>
   <a href="<%= copy_collage_path(@collage) %>" class="tooltip remix-action requires_logged_in" id="copy-collage" title="Remix <%= @collage.name %>" data-type="collage" data-title="<%= @collage.name %>">
     <span class="icon icon-remix-large"><span>Remix Collage</span></span>
   </a>
@@ -20,7 +20,7 @@
   <%= link_to raw('<span class="icon icon-favorite-large"><span>Bookmark Collage</span></span>'), '#', :class => "bookmark-action tooltip requires_logged_in", :title => "Bookmark #{@collage.name}", "data-type" => "collage", "data-itemid" => @collage.id %>
 </aside>
 
-<div id="collage" class="singleitem" data-itemid="<%= @collage.id %>">
+<div id="collage<%= @collage.id %>" class="singleitem" data-itemid="<%= @collage.id %>">
   <div id="main_details">
     <h1 class="scale1-5"><%= @collage.name %></h1>
     <h3 class="scale1-5 <%= @collage.root != @collage ? 'with_creators' : '' %>">
@@ -166,4 +166,5 @@ var collage_links = <%= raw @collage.collage_links.inject({}) { |h, a| h["c#{a.i
 var color_list = <%= raw Collage.color_list.to_json %>;
 var layer_color_map = <%= raw @color_map.to_json %>;
 var layer_data = <%= raw @collage.layer_data.to_json %>;
+var heatmap = <%= raw @collage.heatmap.to_json %>;
 </script>

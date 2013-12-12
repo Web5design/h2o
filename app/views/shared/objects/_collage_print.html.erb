@@ -1,11 +1,17 @@
 <% if collage.present? -%>
 <div class="item_description scale0-9"><%= raw collage.description %></div>
-<div class="collage-content" id="collage<%= collage.id %>" data-id="<%= collage.id %>">
+<div class="collage-content" id="collage<%= collage.id %>" data-id="<%= collage.id %>" data-annotator_version="<%= collage.annotator_version %>">
+<div class="article">
+<% if collage.annotator_version == 1 -%>
 <% cache "collage-#{collage.id}-editable-content" do -%>
-<article>
 <%= raw collage.editable_content %>
-</article>
 <% end -%>
+<% else -%>
+<% cache "collage-#{collage.id}-editable-content-v2" do -%>
+<%= raw collage.editable_content_v2 %>
+<% end -%>
+<% end -%>
+</div>
 </div>
 <script type="text/javascript">
 var collage_data_<%= collage.id %> = <%= raw(params[:state] || collage.readable_state || "{}") %>;

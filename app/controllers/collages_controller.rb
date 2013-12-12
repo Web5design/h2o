@@ -168,7 +168,6 @@ class CollagesController < BaseController
   end
 
   def export
-    add_javascripts ["export_annotatorv1", "export_annotatorv2"]
     render :layout => 'print'
   end
 
@@ -177,7 +176,6 @@ class CollagesController < BaseController
       add_javascripts ['json2.js', 'annotator-full.js', 'h2o-annotator.js']
       add_stylesheets 'annotator.min.css'
     end
-    add_javascripts "export_annotatorv#{@collage.annotator_version}"
     render :action => 'export', :layout => 'print'
   end
 
