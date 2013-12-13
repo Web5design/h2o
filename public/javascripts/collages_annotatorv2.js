@@ -128,7 +128,8 @@ $.extend({
     });
   },
   initiate_annotator: function(can_edit) {
-    collage_id = $.getItemId(); 
+    collage_id = $.getItemId();
+    $('div.article *:not(.paragraph-numbering)').addClass('annotation_content');
     $('div.article').annotator({ readOnly: !can_edit }).annotator('addPlugin', 'H2O', layer_data).annotator('addPlugin', 'Store', {
       prefix: '/annotations',
       urls: {
@@ -230,7 +231,7 @@ $.extend({
       $.showGlobalSpinnerNode();
       last_data = $.retrieveState();
       $('.unlayered,.annotator-hl').show();
-      $('.unlayered-border-start,.unlayered-border-end,.unlayered-ellipsis,.layered-control,.layered-ellipsis').remove();
+      $('.unlayered-control-start,.unlayered-control-end,.unlayered-ellipsis,.layered-control,.layered-ellipsis').remove();
       $.each($('#layers_highlights a'), function(i, el) {
         if($(el).text().match(/^UNHIGHLIGHT/)) {
           $(el).click();
@@ -337,11 +338,10 @@ $.extend({
       e.preventDefault();
       $.showGlobalSpinnerNode();
       $('.unlayered,.annotator-hl').show();
-      $('.unlayered-border-start,.unlayered-border-end,.unlayered-ellipsis,.layered-control,.layered-ellipsis').hide();
+      $('.unlayered-control-start,.unlayered-control-end,.unlayered-ellipsis,.layered-control,.layered-ellipsis').hide();
       $.each($('#layers a.hide_show'), function(i, el) {
         $(el).html('HIDE "' + $(el).parent().data('name') + '"');
       });
-      //$('#layers a.shown').removeClass('shown');
       $.hideShowUnlayeredOptions();
       $.hideGlobalSpinnerNode();
     });
@@ -349,7 +349,7 @@ $.extend({
     $('#show_unlayered a').click(function(e) {
       e.preventDefault();
       $.showGlobalSpinnerNode();
-      $('.unlayered,.unlayered-border-start,.unlayered-border-end').show();
+      $('.unlayered,.unlayered-control-start,.unlayered-control-end').show();
       $('.unlayered-ellipsis').hide();
       $.hideShowUnlayeredOptions();
       $.hideGlobalSpinnerNode();
@@ -357,7 +357,7 @@ $.extend({
     $('#hide_unlayered a').click(function(e) {
       e.preventDefault();
       $.showGlobalSpinnerNode();
-      $('.unlayered,.unlayered-border-start,.unlayered-border-end').hide();
+      $('.unlayered,.unlayered-control-start,.unlayered-control-end').hide();
       $('.unlayered-ellipsis').show();
       $.hideShowUnlayeredOptions();
       $.hideGlobalSpinnerNode();

@@ -163,9 +163,9 @@ div.article.show_unlayered .unlayered-ellipsis { display: none; }
 .annotation-empty { background: #FFF; height: 13px; width: 0px; position: relative; left: -3px; }
 .unlayered-ellipsis { padding-right: 10px; display: none; font-weight: normal; color: #336699; font-style: normal; text-decoration: none; }
 .unlayered-control-start,
-.layered-control-start { display: none; background: url(/images/fcollapse.png) no-repeat; height: 16px; width: 9px; margin: 0px 3px 0px 0px; position: relative; top: 2px; }
+.layered-control-start { display: none; background: url(/images/fcollapse.png) no-repeat; height: 16px; width: 9px; margin: 0px 3px 0px 3px; position: relative; top: 2px; }
 .unlayered-control-end,
-.layered-control-end { display: none; background: url(/images/collapse.png) no-repeat; height: 16px; width: 9px; margin: 0px 3px 0px 0px; position: relative; top: 2px; }
+.layered-control-end { display: none; background: url(/images/collapse.png) no-repeat; height: 16px; width: 9px; margin: 0px 3px 0px 3px; position: relative; top: 2px; }
 .paragraph-numbering { position: absolute; left: 30px; color: #369; text-decoration: none; font-weight: normal; font-size: 13px; }
 
 div.article .layered-ellipsis { display: none; text-decoration: none; }
