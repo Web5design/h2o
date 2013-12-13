@@ -87,7 +87,9 @@ var export_functions = {
 	    className: "jsb", replaceInvisible: true
 	  }).change(function() {
 	    var choice = $(this).val();
+      $('#highlight_styles').text('');
 	    if($('#printheatmap').val() == 'yes') {
+        heatmap_display = false;
 	      $('#printheatmap').val('no');
 	      $('#heatmap_options .jsb-currentItem').html('No');
 	    }
@@ -100,12 +102,20 @@ var export_functions = {
 	    } else if(choice == 'all') {
 	      $('.collage-content').each(function(i, el) {
 	        var id = $(el).data('id');
-	        var data = eval("color_map_" + id);
-	        export_functions["version" + $(el).data('annotator_version')].highlightCollage(id, data.highlights);
-	        //$.highlightCollage(id, data);
+          if($(el).data('annotator_version') == 1) {
+	          export_functions.version1.highlightCollage(id, eval("color_map_" + id));
+          } else {
+	          export_functions.version2.highlightCollage(id, eval("layer_data_" + id));
+          }
 	      });
 	    } else {
-	      $('tt').css('border-bottom', '2px solid #FFFFFF');
+	      $('.collage-content').each(function(i, el) {
+	        var id = $(el).data('id');
+          if($(el).data('annotator_version') == 2) {
+            //clear highlight class
+	          export_functions.version2.highlightCollage(id, {});
+          }
+	      });
 	    }
 	  });
 	  $('#printheatmap').selectbox({
@@ -117,11 +127,13 @@ var export_functions = {
 	      $('#highlight_options .jsb-currentItem').html('None');
 	    }
 	    if(choice == 'yes') {
+        heatmap_display = true;
 	      $('.collage-content').each(function(i, el) {
 	        var id = $(el).data('id');
           export_functions["version" + $(el).data('annotator_version')].displayHeatmap(id);
 	      });
 	    } else {
+        heatmap_display = false;
         $('#highlight_styles').text('');
 	    }
 	  });
@@ -206,10 +218,6 @@ var export_functions = {
         } else if(i == 'highlights') {
           $('#printhighlights').val('original');
           $('#printheatmap').val('no');
-          $.each(e, function(j) {
-            $('.layer-' + j).addClass('highlight-' + j);
-          });
-          layer_data = e;
           export_functions.version2.highlightCollage(id, e);
         }
         if(i == 'load_heatmap') {
@@ -224,13 +232,18 @@ var export_functions = {
       $.each(['a', 'em', 'sup', 'p', 'center', 'h2', 'pre'], function(i, selector) {
         var set = $('#collage' + id + ' div.article ' + selector);
         set = set.filter(':not(:has(*:visible)):not(.paragraph-numbering)');
-        //set = set.filter(':not(:has(.layered-ellipsis:visible))');
-        //set = set.filter(':not(:has(.unlayered-ellipsis:visible))');
         set.remove();
       });
 
 	  },
 	  highlightCollage: function(collage_id, highlights) {
+      layer_data = eval("layer_data_" + collage_id);
+      $.each(layer_data, function(j) {
+        $('#collage' + collage_id + ' .layer-' + j).removeClass('highlight-' + j);
+      });
+      $.each(highlights, function(j) {
+        $('#collage' + collage_id + ' .collage-' + collage_id + '.layer-' + j).addClass('highlight-' + j);
+      });
 	    $('#collage' + collage_id + ' .layered-empty').removeClass('layered-empty');
 
 		  var total_selectors = new Array();
@@ -268,7 +281,6 @@ var export_functions = {
 		  for(var i = 0; i<total_selectors.length; i++) {
 		    updated[total_selectors[i]] = 0;
 		  }
-	
 		  for(var i = 0; i<total_selectors.length; i++) {
 		    var selector = total_selectors[i];
 		    if(updated[selector] == 0) {
@@ -327,11 +339,10 @@ var export_functions = {
 	  },
 	  displayHeatmap: function(collage_id) {
       var heatmap = eval('heatmap_' + collage_id);
-	    $.each(stored_heatmap["collage" + collage_id].data, function(i, e) {
-	      var opacity = e / (stored_heatmap["collage" + collage_id].max + 1);
+	    $.each(heatmap.data, function(i, e) {
+	      var opacity = e / (heatmap.max + 1);
 	      var color_combine = $.xcolor.opacity('#FFFFFF', '#FE2A2A', opacity);
-	      var hex = color_combine.getHex();
-	      $('#collage' + collage_id + ' tt.' + i).css('border-bottom', '2px solid ' + hex);
+        $.rule('#collage' + collage_id + ' tt#' + i + ' { border-bottom: 2px solid ' + color_combine.getHex() + ' }').appendTo('#highlight_styles');
 	    });
 	  },
 	  loadState: function(id) {
@@ -397,7 +408,6 @@ var export_functions = {
 	    }
 	  },
 	  highlightCollage: function(collage_id, highlights) {
-	    $('#collage' + collage_id + ' tt').css('border-bottom', '2px solid #FFFFFF');
 	    $.each(highlights, function(a, hex) {
 	      $.each($('#collage' + collage_id + ' tt.' + a), function(i, el) {
 	        var current = $(el);
@@ -413,7 +423,7 @@ var export_functions = {
 	          var color_combine = $.xcolor.opacity(current_hex, color, opacity);
 	          current_hex = color_combine.getHex();
 	        });
-	        current.css('border-bottom', '2px solid ' + current_hex);
+          $.rule('#collage' + collage_id + ' tt#' + $(el).attr('id') + ' { border-bottom: 2px solid ' + current_hex + ';}').appendTo('#highlight_styles');
 	        current.data('highlight_colors', highlight_colors);
 	      });
 	    });

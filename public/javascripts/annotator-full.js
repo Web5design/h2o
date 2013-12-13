@@ -1039,7 +1039,8 @@
 
     Annotator.prototype.setupAnnotation = function(annotation) {
       var e, normed, normedRanges, r, root, _k, _l, _len2, _len3, _ref1;
-      root = this.wrapper[0];
+      //H2O: Special customization for multiple annotators per page
+      root = $('#collage' + collage_id + ' .annotator-wrapper')[0];
       annotation.ranges || (annotation.ranges = this.selectedRanges);
       normedRanges = [];
       _ref1 = annotation.ranges;
@@ -1068,7 +1069,7 @@
         annotation.quote.push($.trim(normed.text()));
         annotation.ranges.push(normed.serialize(this.wrapper[0], '.annotator-hl,.unlayered,.collage-link'));
         
-        var base_css_classes = 'annotator-hl annotation-' + annotation.id;
+        var base_css_classes = 'annotator-hl annotation-' + annotation.id + ' collage-' + annotation.collage_id;
         if(annotation.category !== undefined) {
           $.each(annotation.category, function(i, c) {
             base_css_classes += ' ' + c;
@@ -2372,7 +2373,7 @@
       newData = [];
       for (_l = 0, _len3 = data.length; _l < _len3; _l++) {
         a = data[_l];
-        if (annotationMap[a.id]) {
+        if (annotationMap[a.id] && !heatmap_display) {
           annotation = annotationMap[a.id];
           this.updateAnnotation(annotation, a);
         } else {

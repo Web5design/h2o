@@ -50,7 +50,7 @@ module HeatmapExtensions
 	      { :data => raw_data, :max => max }
       else 
         heatmap_annotations = self.annotatable.collages.inject([]) do |arr, c|
-          if c != self
+          if c != self && c.annotator_version == self.annotator_version
             c.annotations.each do |ann|
               arr << ann.to_json(:include => :layers)
             end
