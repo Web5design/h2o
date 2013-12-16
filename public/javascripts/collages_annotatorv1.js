@@ -53,7 +53,7 @@ jQuery.extend({
   observeUpgradeCollage: function() {
     jQuery('.upgrade-action').live('click', function(e) {
       e.preventDefault();
-      var node = jQuery('<p>').html('You have chosen to upgrade the annotator tool used by this collage. Would you like to continue?');
+      var node = jQuery('<p>').html('You have chosen to upgrade the annotator tool used by this collage.<br />This will reset the current saved collage state. Would you like to continue?');
       jQuery(node).dialog({
         title: 'Upgrade Collage Annotation Tool',
         width: 'auto',
@@ -70,7 +70,7 @@ jQuery.extend({
               },
               success: function(data) {
                 setTimeout(function() {
-                  location.reload();
+                  document.location = document.location;
                 }, 500);
               },
               complete: function() {

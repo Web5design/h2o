@@ -6,6 +6,7 @@ var original_data = {};
 var layer_data;
 var collage_id;
 var heatmap_display = false;
+//var last_data;
 
 $.extend({
   rehighlight: function() {
@@ -17,8 +18,37 @@ $.extend({
   updateWordCount: function() {
     //do nothing
   },
-  loadState: function() {
-    //do nothing
+  loadState: function(collage_id, data) {
+    $.each(data, function(i, e) {
+		    if(i.match(/^unlayered/)) {
+		      $('#collage' + collage_id + ' .unlayered-' + e).remove();
+		      $('#collage' + collage_id + ' .unlayered-ellipsis-' + e).replaceWith($('<span>').addClass('unlayered-ellipsis').html('[...]').show());
+		    } else if(i.match(/^layered/)) {
+		      $('#collage' + collage_id + ' .annotation-' + e).remove();
+		      $('#collage' + collage_id + ' .layered-ellipsis-' + e).replaceWith($('<span>').addClass('layered-ellipsis').html('[...]').show());
+      } else if(i == 'font_face') {
+        $('#fontface').val(e);
+      } else if(i == 'font_size') {
+        $('#fontsize').val(e);
+      } else if(i == 'highlights') {
+        $('#printhighlights').val('original');
+        $('#printheatmap').val('no');
+        export_functions.version2.highlightCollage(collage_id, e);
+      }
+      if(i == 'load_heatmap') {
+        export_functions.version2.displayHeatmap(collage_id);
+        $('#printheatmap').val('yes');
+        $('#printhighlights option:first').remove();
+        $('#printhighlights').val('none');
+      }
+    });
+    $('#collage' + collage_id + ' .unlayered-ellipsis:not(:visible),#collage' + collage_id + ' .layered-ellipsis:not(:visible)').remove();
+
+    $.each(['a', 'em', 'sup', 'p', 'center', 'h2', 'pre'], function(i, selector) {
+      var set = $('#collage' + collage_id + ' div.article ' + selector);
+      set = set.filter(':not(:has(*:visible)):not(.paragraph-numbering)');
+      set.remove();
+    });
   }
 });
 
@@ -188,11 +218,9 @@ var export_functions = {
       }
 	  },
 	  loadState: function(id) {
-      var data = eval("collage_data_" + id);
       collage_id = id;
-
       annotations = eval("annotations_" + id);
-      $('#collage' + id + ' div.article').annotator({ readOnly: true }).annotator('addPlugin', 'H2O', {}).annotator('addPlugin', 'Store', {
+      $('#collage' + id + ' div.article').data('collage_id', id).data('original_data', eval("collage_data_" + id)).annotator({ readOnly: true }).annotator('addPlugin', 'H2O', {}).annotator('addPlugin', 'Store', {
         prefix: '/annotations',
         urls: {
           create: '/create',
@@ -203,46 +231,21 @@ var export_functions = {
         }
       });
       $('#collage' + id + ' .unlayered-border-start,#collage' + id + ' .unlayered-border-end,#collage' + id + ' .layered-border-start,#collage' + id + ' .layered-border-end').remove();
-
-      $.each(data, function(i, e) {
-		    if(i.match(/^unlayered/)) {
-		      $('#collage' + id + ' .unlayered-' + e).remove();
-		      $('#collage' + id + ' .unlayered-ellipsis-' + e).replaceWith($('<span>').addClass('unlayered-ellipsis').html('[...]').show());
-		    } else if(i.match(/^layered/)) {
-		      $('#collage' + id + ' .annotation-' + e).remove();
-		      $('#collage' + id + ' .layered-ellipsis-' + e).replaceWith($('<span>').addClass('layered-ellipsis').html('[...]').show());
-        } else if(i == 'font_face') {
-          $('#fontface').val(e);
-        } else if(i == 'font_size') {
-          $('#fontsize').val(e);
-        } else if(i == 'highlights') {
-          $('#printhighlights').val('original');
-          $('#printheatmap').val('no');
-          export_functions.version2.highlightCollage(id, e);
-        }
-        if(i == 'load_heatmap') {
-          export_functions.version2.displayHeatmap(id);
-          $('#printheatmap').val('yes');
-          $('#printhighlights option:first').remove();
-          $('#printhighlights').val('none');
-        }
-      });
-      $('#collage' + id + ' .unlayered-ellipsis:not(:visible),#collage' + id + ' .layered-ellipsis:not(:visible)').remove();
-
-      $.each(['a', 'em', 'sup', 'p', 'center', 'h2', 'pre'], function(i, selector) {
-        var set = $('#collage' + id + ' div.article ' + selector);
-        set = set.filter(':not(:has(*:visible)):not(.paragraph-numbering)');
-        set.remove();
-      });
-
 	  },
 	  highlightCollage: function(collage_id, highlights) {
       layer_data = eval("layer_data_" + collage_id);
-      $.each(layer_data, function(j) {
-        $('#collage' + collage_id + ' .layer-' + j).removeClass('highlight-' + j);
+
+      var keys = new Array();
+      $.each(highlights, function(i, j) {
+        keys.push(i);
       });
-      $.each(highlights, function(j) {
-        $('#collage' + collage_id + ' .collage-' + collage_id + '.layer-' + j).addClass('highlight-' + j);
+      $.each(layer_data, function(i, j) {
+        if($.inArray(i, keys) == -1) {
+          $('#collage' + collage_id + ' .layer-' + i).removeClass('highlight-' + i);
+        }
+      });
+      $.each(highlights, function(i, j) {
+        $('#collage' + collage_id + ' .collage-' + collage_id + '.layer-' + i).addClass('highlight-' + i);
       });
 	    $('#collage' + collage_id + ' .layered-empty').removeClass('layered-empty');
 

@@ -50,7 +50,6 @@ class CollagesController < BaseController
         :can_edit             => can_edit,
         :can_edit_description => can_edit_description,
         :can_edit_annotations => can_edit_annotations,
-        :readable_state       => @collage.readable_state || { :edit_mode => false }.to_json,
         :custom_block         => 'collage_afterload'
       }
     else
@@ -184,17 +183,13 @@ class CollagesController < BaseController
   end
 
   def upgrade_annotator
-    Rails.logger.warn "stephie: #{@collage.inspect}"
-    Rails.logger.warn "stephie: #{params.inspect}"
     params[:annotation_data].each do |k, v|
-      annotation = Annotation.find(k)
-      Rails.logger.warn "stephie: #{annotation.inspect}"
-      annotation.update_attributes(v)
+      Annotation.find(k).update_attributes(v)
     end
-    @collage.update_attribute(:annotator_version, 2)
-    # update collage version
+    @collage.update_attributes({:annotator_version => 2, :readable_state => nil })
     render :json => {}
   rescue Exception => e
+  Rails.logger.warn "stephie: #{e.inspect}"
     render :json => { :error => true, :message => "Could not process. Please try again." }, :status => :unprocessable_entity
   end
 end

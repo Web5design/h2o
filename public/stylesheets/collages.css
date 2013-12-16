@@ -447,3 +447,6 @@ div.article .annotator-category h3 {
   margin: 0px;
   display: block;
 }
+div.article .annotator-item p {
+  margin-left: 0px;
+}

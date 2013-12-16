@@ -130,7 +130,7 @@ $.extend({
   initiate_annotator: function(can_edit) {
     collage_id = $.getItemId();
     $('div.article *:not(.paragraph-numbering)').addClass('annotation_content');
-    $('div.article').annotator({ readOnly: !can_edit }).annotator('addPlugin', 'H2O', layer_data).annotator('addPlugin', 'Store', {
+    $('div.article').data('collage_id', collage_id).data('original_data', original_data).annotator({ readOnly: !can_edit }).annotator('addPlugin', 'H2O', layer_data).annotator('addPlugin', 'Store', {
       prefix: '/annotations',
       urls: {
         create: '/create',
@@ -142,7 +142,6 @@ $.extend({
     });
   },
   collage_afterload: function(results) {
-    last_data = $.parseJSON(results.readable_state);
     if(results.can_edit_annotations) {
       $.initiate_annotator(true);  
       $('.requires_edit').animate({ opacity: 1.0 });
@@ -265,7 +264,7 @@ $.extend({
 	    $.rule('.annotator-wrapper .annotator-hl', '#additional_styles').remove();
       st_annotator.plugins.H2O.setUnlayeredAll();
       $.rehighlight();
-      $.loadState();
+      $.loadState($.getItemId(), last_data);
       $.hideGlobalSpinnerNode();
     });
   },
@@ -332,7 +331,7 @@ $.extend({
       e.preventDefault();
       last_data = original_data;
       $('.unlayered,.annotator-hl').show();
-      $.loadState();
+      $.loadState($.getItemId(), last_data);
     });
     $('#full_text').click(function(e) {
       e.preventDefault();
@@ -349,8 +348,8 @@ $.extend({
     $('#show_unlayered a').click(function(e) {
       e.preventDefault();
       $.showGlobalSpinnerNode();
-      $('.unlayered,.unlayered-control-start,.unlayered-control-end').show();
-      $('.unlayered-ellipsis').hide();
+      $('.unlayered').show();
+      $('.unlayered-ellipsis,.unlayered-control-start,.unlayered-control-end').hide();
       $.hideShowUnlayeredOptions();
       $.hideGlobalSpinnerNode();
     });
@@ -489,8 +488,8 @@ $.extend({
       }
     }, 1000); 
   },
-  loadState: function() {
-    $.each(last_data, function(i, e) {
+  loadState: function(collage_id, data) {
+    $.each(data, function(i, e) {
       if(i.match(/^unlayered/)) {
         $('.unlayered-' + e).hide();
         $('.unlayered-ellipsis-' + e).show();

@@ -878,7 +878,6 @@
       this.showEditor = __bind(this.showEditor, this);
       Annotator.__super__.constructor.apply(this, arguments);
       this.plugins = {};
-
       if (!Annotator.supported()) {
         return this;
       }
@@ -1039,8 +1038,11 @@
 
     Annotator.prototype.setupAnnotation = function(annotation) {
       var e, normed, normedRanges, r, root, _k, _l, _len2, _len3, _ref1;
-      //H2O: Special customization for multiple annotators per page
+
+      //H2O customization:
       root = $('#collage' + collage_id + ' .annotator-wrapper')[0];
+
+      root = this.wrapper[0];
       annotation.ranges || (annotation.ranges = this.selectedRanges);
       normedRanges = [];
       _ref1 = annotation.ranges;
@@ -1060,21 +1062,25 @@
       annotation.quote = [];
       annotation.ranges = [];
       annotation.highlights = [];
-      if(annotation.id === undefined) {
+
+      //H2O customization:
+      if(annotation.id == undefined) {
         annotation.id = 'noid';
       }
 
       for (_l = 0, _len3 = normedRanges.length; _l < _len3; _l++) {
         normed = normedRanges[_l];
         annotation.quote.push($.trim(normed.text()));
+
+        //H2O customization:
         annotation.ranges.push(normed.serialize(this.wrapper[0], '.annotator-hl,.unlayered,.collage-link'));
-        
         var base_css_classes = 'annotator-hl annotation-' + annotation.id + ' collage-' + annotation.collage_id;
         if(annotation.category !== undefined) {
           $.each(annotation.category, function(i, c) {
             base_css_classes += ' ' + c;
           });
         }
+
         $.merge(annotation.highlights, this.highlightRange(normed, base_css_classes));
       }
       annotation.quote = annotation.quote.join(' / ');
@@ -1089,8 +1095,6 @@
     };
 
     Annotator.prototype.deleteAnnotation = function(annotation) {
-      this.publish('beforeAnnotationDeleted', [annotation]);
-
       var child, h, _k, _len2, _ref1;
       if (annotation.highlights != null) {
         _ref1 = annotation.highlights;
@@ -1106,7 +1110,7 @@
       this.publish('annotationDeleted', [annotation]);
       return annotation;
     };
-    
+
     Annotator.prototype.loadAnnotations = function(annotations) {
       var clone, loader;
       if (annotations == null) {

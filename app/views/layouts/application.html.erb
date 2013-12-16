@@ -58,6 +58,7 @@ var UTC_OFFSET = #{Time.zone.now.utc_offset * 1000};") %>
 <%= render :partial => "shared/font_selectors" %>
 
 <%= javascript_include_tag 'jquery.min.js' %>
+<%= javascript_include_tag 'jquery-migrate.min.js' %>
 <%= javascript_include_tag 'jquery-ui.min.js' %>
 <script src="//tinymce.cachefly.net/4.0/tinymce.min.js"></script>
 <%= javascript_include_tag 'fonts', 'jquery.selectbox-0.6.1.pack', 'jquery.rating.pack',
