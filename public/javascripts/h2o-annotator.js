@@ -49,6 +49,34 @@ H2O.prototype.pluginInit = function() {
     return annotation;
   };
 
+  this.annotator.subscribe("annotationEditorShown", function(editor, annotation) {
+    if(annotation.id === "noid") {
+      $('.return-to-annotation').hide();
+      $('.link-to-collage').show();
+      $.openCollageLinkForm('collage_links/embedded_pager', {
+        /* host_collage: $.getItemId(),
+        link_start: new_annotation_start,
+        link_end: new_annotation_end,
+        text: text */
+      });
+    } else {
+      $('.link-to-collage,.return-to-annotation').hide();
+    }
+  });
+  $('.link-to-collage').click(function(e) {
+    $('.return-to-annotation').show();
+    $('.link-to-collage').hide();
+    $('.annotator-listing > li:not(.annotator-collage_links)').slideUp();
+    $('.annotator-listing > li.annotator-collage_links').slideDown();
+    e.preventDefault();
+  });
+  $('.return-to-annotation').click(function(e) {
+    $('.return-to-annotation').hide();
+    $('.link-to-collage').show();
+    $('.annotator-listing > li:not(.annotator-collage_links)').slideDown();
+    $('.annotator-listing > li.annotator-collage_links').slideUp();
+    e.preventDefault();
+  });
   this.annotator.subscribe("annotationCreated", function(annotation) {
     H2O.prototype.setHighlights(annotation);
     H2O.prototype.setUnlayeredSingle(annotation);
@@ -66,6 +94,7 @@ H2O.prototype.pluginInit = function() {
     jQuery.rehighlight();
     jQuery.hideShowUnlayeredOptions();
     jQuery.updateWordCount();
+    H2O.prototype.manageLayerCleanup(h2o_annotator.annotator, undefined, false);
 
     st_annotator = h2o_annotator.annotator;
     recorded_annotations = h2o_annotator.annotations;
@@ -129,6 +158,11 @@ H2O.prototype.pluginInit = function() {
     label: 'New Layer',
     submit: this.setAnnotationCat
   });
+  this.annotator.editor.addField({
+    id: 'collage_links',
+    type: 'collage_links',
+    label: 'Collage Links'
+  });
   this.viewer = this.annotator.viewer.addField({
     load: this.updateViewer
   });
@@ -166,7 +200,7 @@ H2O.prototype.manageLayerCleanup = function(_annotator, annotation, check_for_ne
   }
 
   $.each($('#layers_highlights li'), function(i, el) {
-    if($('span.layer-' + $(el).data('name')).size() == 0) {
+    if($('span.layer-' + $(el).data('name') + ':not(.annotator-category *)').size() == 0) {
       var found = false;
       if(check_for_new) {
         $.each(annotation.new_layer_list, function(j, new_layer) {
@@ -600,6 +634,7 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
   };
 
   H2O.prototype.updateViewer = function(field, annotation) {
+  console.log('inside update viewer');
     if($('#print-options').size() > 0) {
       return;
     }
@@ -623,17 +658,17 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
     }
     if(annotation.category !== undefined && annotation.category.length > 0) {
 	    for(_c = 0; _c < annotation.category.length; _c++) {
-        var layer_name = annotation.category[_c]; 
-	      if(displayed[layer_name] === undefined) {
+        var layer_name = annotation.category[_c];
+	      if(field.find('span.' + layer_name).size() == 0) {
 	        var layer_name = annotation.category[_c].replace(/layer-/, '');
           if(annotation.collage_id == $.getItemId()) {
 	          var hex = layer_data[layer_name];
 	          var color_combine = jQuery.xcolor.opacity('#FFFFFF', hex, 0.4);
-	          displayed[layer_name] = 1;
-	          field.append($('<span>').attr('style', 'background-color:' + color_combine.getHex()).html(layer_name));
+	          field.append($('<span>').attr('style', 'background-color:' + color_combine.getHex()).html(layer_name).addClass('layer-' + layer_name));
           } else {
-	          field.append($('<span>').html(layer_name));
+	          field.append($('<span>').html(layer_name).addClass('layer-' + layer_name));
           }
+	        displayed[layer_name] = 1;
 	      }
 	    }
     } else {

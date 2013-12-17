@@ -1073,6 +1073,9 @@
         annotation.quote.push($.trim(normed.text()));
 
         //H2O customization:
+        if($('#print-options').size() == 0) {
+          annotation.collage_id = $.getItemId(); 
+        }
         annotation.ranges.push(normed.serialize(this.wrapper[0], '.annotator-hl,.unlayered,.collage-link'));
         var base_css_classes = 'annotator-hl annotation-' + annotation.id + ' collage-' + annotation.collage_id;
         if(annotation.category !== undefined) {
@@ -1551,7 +1554,8 @@
       focus: 'annotator-focus'
     };
 
-    Editor.prototype.html = "<div class=\"annotator-outer annotator-editor\">\n  <form class=\"annotator-widget\">\n    <ul class=\"annotator-listing\"></ul>\n    <div class=\"annotator-controls\">\n      <a href=\"#cancel\" class=\"annotator-cancel\">" + _t('Cancel') + "</a>\n<a href=\"#save\" class=\"annotator-save annotator-focus\">" + _t('Save') + "</a>\n    </div>\n  </form>\n</div>";
+    //H2O customization:
+    Editor.prototype.html = "<div class=\"annotator-outer annotator-editor\">\n  <form class=\"annotator-widget\">\n    <ul class=\"annotator-listing\"></ul>\n    <div class=\"annotator-controls\">\n      <a href=\"#collage_link\" class=\"link-to-collage\">Link to Collage</a>\n<a href=\"return_to_annotation\" class=\"return-to-annotation\">Add Annotation</a>\n<a href=\"#cancel\" class=\"annotator-cancel\">" + _t('Cancel') + "</a>\n<a href=\"#save\" class=\"annotator-save annotator-focus\">" + _t('Save') + "</a>\n    </div>\n  </form>\n</div>";
 
     Editor.prototype.options = {};
 
@@ -1629,8 +1633,12 @@
           break;
         case 'select':
           input = $('<select />');
+          break;
         case 'h2o_layer_button':
           input = $('<a href="#">Add New Layer</a>');
+          break;
+        case 'collage_links':
+          input = $('<ul>').html('<li>Collages Loading</li>');
       }
       element.append(input);
       input.attr({
@@ -1645,8 +1653,8 @@
           html: field.label
         }));
       }
-      if(field.type == 'h2o_layer_button') {
-        element.addClass('annotator-h2o_layer_button');
+      if(field.type == 'h2o_layer_button' || field.type == 'collage_links') {
+        element.addClass('annotator-' + field.type);
       }
       this.element.find('ul:first').append(element);
       this.fields.push(field);
@@ -2294,7 +2302,7 @@
     };
 
     Store.prototype.annotationCreated = function(annotation) {
-      annotation.collage_id = $.getItemId();
+      //annotation.collage_id = $.getItemId();
 
       if (__indexOf.call(this.annotations, annotation) < 0) {
         this.registerAnnotation(annotation);

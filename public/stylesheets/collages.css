@@ -450,3 +450,6 @@ div.article .annotator-category h3 {
 div.article .annotator-item p {
   margin-left: 0px;
 }
+div.article .annotator-collage_links {
+  display: none;
+}

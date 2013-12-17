@@ -13,7 +13,7 @@ var all_tts;
 var unlayered_tts;
 var update_unlayered_end = 0;
 
-jQuery.extend({
+$.extend({
   initiate_annotator: function() {
     //dummy function for annotator version 1
   },
@@ -25,17 +25,17 @@ jQuery.extend({
     var prev_items = node.parent().find('> *:lt(' + index + ')');
     var offset = 0;
     for(var j = 0; j < prev_items.size(); j++) {
-      offset += jQuery(prev_items[j]).html().length;
+      offset += $(prev_items[j]).html().length;
     }
     if(type == 'end') {
       offset -= 1;
     }
     var path = '';
-    jQuery.each(node.parentsUntil(root_selector), function(i, el) {
-      var tagName = jQuery(el)[0].tagName;
-      var idx = jQuery(el).parent().children(tagName).index(jQuery(el)) + 1;
+    $.each(node.parentsUntil(root_selector), function(i, el) {
+      var tagName = $(el)[0].tagName;
+      var idx = $(el).parent().children(tagName).index($(el)) + 1;
       idx = "[" + idx + "]";
-      path = "/" + jQuery(el)[0].tagName.toLowerCase() + idx + path;
+      path = "/" + $(el)[0].tagName.toLowerCase() + idx + path;
     });
     return { "xpath" : path, "offset" : offset };
   },
@@ -43,30 +43,30 @@ jQuery.extend({
     all_tts.show();
     $('.control-divider,.layered-control,.annotation-ellipsis,.annotation-content,.annotation-asterisk').remove();
     var data = {};
-    jQuery.each(clean_annotations, function(i, annotation) {
-      var start_data = jQuery.xPathFromSingleNode(jQuery('tt#' + annotation.annotation_start), 'start', 'div.article');
-      var end_data = jQuery.xPathFromSingleNode(jQuery('tt#' + annotation.annotation_end), 'end', 'div.article');
+    $.each(clean_annotations, function(i, annotation) {
+      var start_data = $.xPathFromSingleNode($('tt#' + annotation.annotation_start), 'start', 'div.article');
+      var end_data = $.xPathFromSingleNode($('tt#' + annotation.annotation_end), 'end', 'div.article');
       data[annotation.id] = { "xpath_start": start_data.xpath, "xpath_end" : end_data.xpath, "start_offset" : start_data.offset, "end_offset" : end_data.offset }; 
     });
     return data;
   },
   observeUpgradeCollage: function() {
-    jQuery('.upgrade-action').live('click', function(e) {
+    $('.upgrade-action').live('click', function(e) {
       e.preventDefault();
-      var node = jQuery('<p>').html('You have chosen to upgrade the annotator tool used by this collage.<br />This will reset the current saved collage state. Would you like to continue?');
-      jQuery(node).dialog({
+      var node = $('<p>').html('You have chosen to upgrade the annotator tool used by this collage.<br />This will reset the current saved collage state. Would you like to continue?');
+      $(node).dialog({
         title: 'Upgrade Collage Annotation Tool',
         width: 'auto',
         height: 'auto',
         buttons: {
           Yes: function() {
-            jQuery.ajax({
+            $.ajax({
               type: 'post',
               dataType: 'json',
-              data: { "annotation_data" : jQuery.xPathFromAllAnnotations() },
-              url: '/collages/' + jQuery.getItemId() + '/upgrade_annotator',
+              data: { "annotation_data" : $.xPathFromAllAnnotations() },
+              url: '/collages/' + $.getItemId() + '/upgrade_annotator',
               beforeSend: function() {
-                jQuery.showGlobalSpinnerNode();
+                $.showGlobalSpinnerNode();
               },
               success: function(data) {
                 setTimeout(function() {
@@ -74,152 +74,152 @@ jQuery.extend({
                 }, 500);
               },
               complete: function() {
-                jQuery.hideGlobalSpinnerNode();
+                $.hideGlobalSpinnerNode();
               }
             });
           },
           No: function() {
-            jQuery(node).dialog('close');
+            $(node).dialog('close');
           }
         }
       });
     });
   },
   observeDeleteInheritedAnnotations: function () {
-    jQuery('#delete_inherited_annotations').live('click', function(e) {
+    $('#delete_inherited_annotations').live('click', function(e) {
       e.preventDefault();
-      jQuery.ajax({
+      $.ajax({
         type: 'GET',
         cache: false,
         dataType: 'JSON',
-        url: jQuery.rootPath() + 'collages/' + jQuery.getItemId() + '/delete_inherited_annotations',
+        url: $.rootPath() + 'collages/' + $.getItemId() + '/delete_inherited_annotations',
         beforeSend: function(){
-          jQuery.showGlobalSpinnerNode();
+          $.showGlobalSpinnerNode();
         },
         success: function(data){
-          jQuery('.unlayered-ellipsis:visible').click();
-          jQuery('div.article').removeClass('hide_unlayered').addClass('show_unlayered');
-          jQuery.hideShowUnlayeredOptions();
-          var deleted_annotations = jQuery.parseJSON(data.deleted);
-          jQuery.each(deleted_annotations, function(i, a) {
-            jQuery.deleteAnnotationMarkup(clean_annotations["a" + a.annotation.id]);
+          $('.unlayered-ellipsis:visible').click();
+          $('div.article').removeClass('hide_unlayered').addClass('show_unlayered');
+          $.hideShowUnlayeredOptions();
+          var deleted_annotations = $.parseJSON(data.deleted);
+          $.each(deleted_annotations, function(i, a) {
+            $.deleteAnnotationMarkup(clean_annotations["a" + a.annotation.id]);
           });
-          jQuery('#inherited_h,#inherited_span').remove();
-          jQuery('.unlayered-control').hide();
-          jQuery.hideGlobalSpinnerNode();
+          $('#inherited_h,#inherited_span').remove();
+          $('.unlayered-control').hide();
+          $.hideGlobalSpinnerNode();
         },
         error: function() {
-          jQuery.hideGlobalSpinnerNode();
+          $.hideGlobalSpinnerNode();
         }
       });
     });
   },
   collage_afterload: function(results) {
-    last_data = jQuery.parseJSON(results.readable_state);
-    jQuery.loadState();
+    last_data = original_data;
+    $.loadState();
     if(results.can_edit_annotations) {
-      jQuery.listenToRecordCollageState();
-      jQuery('.requires_edit').animate({ opacity: 1.0 });
+      $.listenToRecordCollageState();
+      $('.requires_edit').animate({ opacity: 1.0 });
     } else {
-      jQuery('.requires_edit').remove();
+      $('.requires_edit').remove();
     }
     if(results.can_edit_description) {
-      jQuery('.edit-action').animate({ opacity: 1.0 });
+      $('.edit-action').animate({ opacity: 1.0 });
     } else {
-      jQuery('.edit-action').remove();
+      $('.edit-action').remove();
     }
   },
   slideToParagraph: function() {
     if(document.location.hash.match(/^#p[0-9]+/)) {
       var p = document.location.hash.match(/[0-9]+/);
-      var paragraph = jQuery('#paragraph' + p);
+      var paragraph = $('#paragraph' + p);
       var pos = paragraph.offset().top;
-      jQuery(window).scrollTop(pos);
+      $(window).scrollTop(pos);
     }
   },
   observeStatsHighlights: function() {
-    jQuery('#stats').hover(function() {
-      jQuery(this).addClass('stats_hover');
+    $('#stats').hover(function() {
+      $(this).addClass('stats_hover');
     }, function() {
-      jQuery(this).removeClass('stats_hover');
+      $(this).removeClass('stats_hover');
     });
   },
   updateLayerCount: function() {
-    jQuery('#stats_layer_size').html(jQuery('#layers li').size());
+    $('#stats_layer_size').html($('#layers li').size());
   },
   updateAnnotationCount: function() {
     var count = 0;
-    jQuery.each(clean_annotations, function(i, el) {
+    $.each(clean_annotations, function(i, el) {
       count++;
     });
-    jQuery('#stats_annotation_size').html(count);
+    $('#stats_annotation_size').html(count);
   },
   observeViewerToggleEdit: function() {
-    jQuery('#edit_toggle,#quickbar_edit_toggle').click(function(e) {
+    $('#edit_toggle,#quickbar_edit_toggle').click(function(e) {
       e.preventDefault();
-      jQuery('#edit_item #status_message').remove();
-      var el = jQuery(this);
-      if(jQuery(this).hasClass('edit_mode')) {
-        jQuery('#cancel-annotation').click();
-        jQuery('#edit_toggle,#quickbar_edit_toggle').removeClass('edit_mode');
-        if(jQuery('#collapse_toggle').hasClass('expanded')) {
-          jQuery('#edit_item').hide();
-          jQuery('.singleitem').addClass('expanded_singleitem');
-          jQuery.checkForPanelAdjust();
+      $('#edit_item #status_message').remove();
+      var el = $(this);
+      if($(this).hasClass('edit_mode')) {
+        $('#cancel-annotation').click();
+        $('#edit_toggle,#quickbar_edit_toggle').removeClass('edit_mode');
+        if($('#collapse_toggle').hasClass('expanded')) {
+          $('#edit_item').hide();
+          $('.singleitem').addClass('expanded_singleitem');
+          $.checkForPanelAdjust();
         } else {
-          jQuery('#edit_item').hide();
-          jQuery('#stats').show();
-          jQuery.resetRightPanelThreshold();
-          jQuery.checkForPanelAdjust();
+          $('#edit_item').hide();
+          $('#stats').show();
+          $.resetRightPanelThreshold();
+          $.checkForPanelAdjust();
         }
-        jQuery.toggleEditMode(false);
-        jQuery('#heatmap_toggle').removeClass('inactive');
+        $.toggleEditMode(false);
+        $('#heatmap_toggle').removeClass('inactive');
 
         /* Forcing an autosave to save in READ mode */
-        var data = jQuery.retrieveState();  
+        var data = $.retrieveState();  
         last_data = data;
-        jQuery.recordCollageState(JSON.stringify(data), false);
+        $.recordCollageState(JSON.stringify(data), false);
       } else {
-        jQuery('#edit_toggle,#quickbar_edit_toggle').addClass('edit_mode');
-        if(jQuery('#collapse_toggle').hasClass('expanded') || jQuery('#collapse_toggle').hasClass('special_hide')) {
-          jQuery('#collapse_toggle').removeClass('expanded');
-          jQuery('.singleitem').removeClass('expanded_singleitem');
-          jQuery('#edit_item').show();
-          jQuery.resetRightPanelThreshold();
+        $('#edit_toggle,#quickbar_edit_toggle').addClass('edit_mode');
+        if($('#collapse_toggle').hasClass('expanded') || $('#collapse_toggle').hasClass('special_hide')) {
+          $('#collapse_toggle').removeClass('expanded');
+          $('.singleitem').removeClass('expanded_singleitem');
+          $('#edit_item').show();
+          $.resetRightPanelThreshold();
         } else {
-          jQuery('#stats').hide();
-          jQuery('#edit_item').show();
-          jQuery.resetRightPanelThreshold();
+          $('#stats').hide();
+          $('#edit_item').show();
+          $.resetRightPanelThreshold();
         }
-        jQuery.toggleEditMode(true);
-        if(jQuery('#hide_heatmap:visible').size()) {
-          jQuery.removeHeatmapHighlights();
+        $.toggleEditMode(true);
+        if($('#hide_heatmap:visible').size()) {
+          $.removeHeatmapHighlights();
         }
-        jQuery('#heatmap_toggle').removeClass('disabled').addClass('inactive');
-        jQuery.checkForPanelAdjust();
+        $('#heatmap_toggle').removeClass('disabled').addClass('inactive');
+        $.checkForPanelAdjust();
       }
     });
   },
   observeFootnoteLinks: function() {
-    jQuery.each(jQuery('div.article a.footnote'), function(i, el) {
-      jQuery(el).attr('href', unescape(jQuery(el).attr('href')));
-      jQuery(el).attr('name', unescape(jQuery(el).attr('name')));
+    $.each($('div.article a.footnote'), function(i, el) {
+      $(el).attr('href', unescape($(el).attr('href')));
+      $(el).attr('name', unescape($(el).attr('name')));
     });
-    jQuery('div.article a.footnote').click(function() {
-      var href = jQuery(this).attr('href').replace('#', '');
-      var link = jQuery("div.article a[name='" + href + "']");
+    $('div.article a.footnote').click(function() {
+      var href = $(this).attr('href').replace('#', '');
+      var link = $("div.article a[name='" + href + "']");
       if(link.size()) {
         var pos = link.offset().top;
-        jQuery(window).scrollTop(pos - 150);
+        $(window).scrollTop(pos - 150);
       }
       return false;
     });
   },
   getHexes: function() {
-    var hexes = jQuery('<div class="hexes"></div>');
-    jQuery.each(color_list, function(i, item) {
-      var node = jQuery('<a href="#"></a>').data('value', item.hex).css({ 'background' : '#' + item.hex });
-      if(jQuery(".layer_check [data-value='" + item.hex + "']").length) {
+    var hexes = $('<div class="hexes"></div>');
+    $.each(color_list, function(i, item) {
+      var node = $('<a href="#"></a>').data('value', item.hex).css({ 'background' : '#' + item.hex });
+      if($(".layer_check [data-value='" + item.hex + "']").length) {
         node.addClass('inactive');
       }
       hexes.append(node);
@@ -230,127 +230,127 @@ jQuery.extend({
     return hexes;
   },
   observeLayerColorMapping: function() {
-    jQuery('.hexes a').live('click', function() {
-      if(jQuery(this).hasClass('inactive')) {
+    $('.hexes a').live('click', function() {
+      if($(this).hasClass('inactive')) {
         return false;
       }
-      jQuery(this).parent().siblings('.hex_input').find('input').val(jQuery(this).data('value'));
-      jQuery(this).siblings('a.active').removeClass('active');
-      jQuery(this).addClass('active');
+      $(this).parent().siblings('.hex_input').find('input').val($(this).data('value'));
+      $(this).siblings('a.active').removeClass('active');
+      $(this).addClass('active');
       return false;
     });
-    jQuery('#add_new_layer').live('click', function() {
-      var new_layer = jQuery('<div class="new_layer"><p>Enter Layer Name <input type="text" name="new_layer_list[][layer]" /></p><p class="hex_input">Choose a Color<input type="hidden" name="new_layer_list[][hex]" /></p><a href="#" class="remove_layer">Cancel &raquo;</a></div>');
-      var hexes = jQuery.getHexes();
+    $('#add_new_layer').live('click', function() {
+      var new_layer = $('<div class="new_layer"><p>Enter Layer Name <input type="text" name="new_layer_list[][layer]" /></p><p class="hex_input">Choose a Color<input type="hidden" name="new_layer_list[][hex]" /></p><a href="#" class="remove_layer">Cancel &raquo;</a></div>');
+      var hexes = $.getHexes();
       hexes.insertBefore(new_layer.find('.remove_layer'));
-      jQuery('#new_layers').append(new_layer);
+      $('#new_layers').append(new_layer);
       return false;
     });
-    jQuery('.remove_layer').live('click', function() {
-      jQuery(this).parent().remove();
+    $('.remove_layer').live('click', function() {
+      $(this).parent().remove();
       return false;
     });
   },
   removeHeatmapHighlights: function() {
-    jQuery.each(heatmap.data, function(i, e) {
-      jQuery('tt#' + i + '.heatmapped').css('background-color', '#FFFFFF').removeClass('heatmapped');
+    $.each(heatmap.data, function(i, e) {
+      $('tt#' + i + '.heatmapped').css('background-color', '#FFFFFF').removeClass('heatmapped');
     });
   },
   applyHeatmapHighlights: function() {
-    jQuery.each(heatmap.data, function(i, e) {
+    $.each(heatmap.data, function(i, e) {
       var opacity = e / (heatmap.max+1);
-      var color_combine = jQuery.xcolor.opacity('#FFFFFF', '#FE2A2A', opacity);
+      var color_combine = $.xcolor.opacity('#FFFFFF', '#FE2A2A', opacity);
       var hex = color_combine.getHex();
-      jQuery('tt#' + i).css('background-color', hex).addClass('heatmapped').data('collage_count', e);
+      $('tt#' + i).css('background-color', hex).addClass('heatmapped').data('collage_count', e);
     });
   },
   observeHeatmap: function() {
-    jQuery('tt.heatmapped').live('mouseover', function(e) {
-      var el = jQuery(this);
+    $('tt.heatmapped').live('mouseover', function(e) {
+      var el = $(this);
       el.css('position', 'relative');
-      var heatmap_tip = jQuery('<a>')
+      var heatmap_tip = $('<a>')
         .addClass('heatmap_tip')
         .attr('title', 'Layered in ' + el.data('collage_count') + ' Collage(s)')
         .tipsy({ trigger: 'manual', gravity: 's', opacity: 1.0 });
       el.prepend(heatmap_tip);
       heatmap_tip.tipsy("show");
     }).live('mouseout', function(e) {
-      var el = jQuery(this);
+      var el = $(this);
       el.css('position', 'static');
       el.find('a.heatmap_tip').tipsy("hide");
       el.find('a.heatmap_tip').remove();
     });
-    jQuery('#heatmap_toggle:not(.inactive,.disabled)').live('click', function(e) {
+    $('#heatmap_toggle:not(.inactive,.disabled)').live('click', function(e) {
       e.preventDefault();
       if(heatmap === undefined) {
-        jQuery.ajax({
+        $.ajax({
           type: 'GET',
           cache: false,
           dataType: 'JSON',
-          url: jQuery.rootPath() + 'collages/' + jQuery.getItemId() + '/heatmap',
+          url: $.rootPath() + 'collages/' + $.getItemId() + '/heatmap',
           beforeSend: function(){
-            jQuery.showGlobalSpinnerNode();
+            $.showGlobalSpinnerNode();
           },
           success: function(data){
-            jQuery('.popup .highlighted').click();
+            $('.popup .highlighted').click();
             heatmap = data.heatmap;
-            jQuery.applyHeatmapHighlights();
-            jQuery('#heatmap_toggle').addClass('disabled');
-            jQuery.hideGlobalSpinnerNode();
+            $.applyHeatmapHighlights();
+            $('#heatmap_toggle').addClass('disabled');
+            $.hideGlobalSpinnerNode();
           },
           error: function() {
-            jQuery.hideGlobalSpinnerNode();
+            $.hideGlobalSpinnerNode();
           }
         });
       } else {
-        jQuery('.popup .highlighted').click();
-        jQuery.applyHeatmapHighlights();
-        jQuery('#heatmap_toggle').addClass('disabled');
-        jQuery.hideGlobalSpinnerNode();
+        $('.popup .highlighted').click();
+        $.applyHeatmapHighlights();
+        $('#heatmap_toggle').addClass('disabled');
+        $.hideGlobalSpinnerNode();
       }
     });
-    jQuery('#heatmap_toggle.disabled').live('click', function(e) {
+    $('#heatmap_toggle.disabled').live('click', function(e) {
       e.preventDefault();
-      if(jQuery(this).hasClass('inactive')) {
+      if($(this).hasClass('inactive')) {
         return false;
       }
-      jQuery.removeHeatmapHighlights();
-      jQuery('#heatmap_toggle').removeClass('disabled');
+      $.removeHeatmapHighlights();
+      $('#heatmap_toggle').removeClass('disabled');
     });
   },
   hideShowAnnotationOptions: function(check_user_preferences) {
-    var total = jQuery('span.annotation-content').size();
-    var shown = jQuery('span.annotation-content').filter(':visible').size();
+    var total = $('span.annotation-content').size();
+    var shown = $('span.annotation-content').filter(':visible').size();
 
     //Check user cookie for showing annotations
     if(total != shown && check_user_preferences) {
-      if(jQuery.cookie('show_annotations') == 'true' && jQuery.cookie('user_id') != jQuery('#author-link').data('author_id')) {
-        jQuery('.annotation-content').css('display', 'inline-block');
+      if($.cookie('show_annotations') == 'true' && $.cookie('user_id') != $('#author-link').data('author_id')) {
+        $('.annotation-content').css('display', 'inline-block');
       }
       total = shown;
     }
 
     if(total == shown) {
-      jQuery('#hide_annotations').show();
-      jQuery('#show_annotations').hide();
+      $('#hide_annotations').show();
+      $('#show_annotations').hide();
     } else if(shown == 0) {
-      jQuery('#hide_annotations').hide();
-      jQuery('#show_annotations').show();
+      $('#hide_annotations').hide();
+      $('#show_annotations').show();
     } else {
-      jQuery('#show_annotations,#hide_annotations').show();
+      $('#show_annotations,#hide_annotations').show();
     }
   },
   hideShowUnlayeredOptions: function() {
-    var total = jQuery('.unlayered-ellipsis').size();
-    var shown = jQuery('.unlayered-ellipsis').filter(':visible').size();
+    var total = $('.unlayered-ellipsis').size();
+    var shown = $('.unlayered-ellipsis').filter(':visible').size();
     if(total == shown) {
-      jQuery('#hide_unlayered').hide();
-      jQuery('#show_unlayered').show();
+      $('#hide_unlayered').hide();
+      $('#show_unlayered').show();
     } else if(shown == 0) {
-      jQuery('#hide_unlayered').show();
-      jQuery('#show_unlayered').hide();
+      $('#hide_unlayered').show();
+      $('#show_unlayered').hide();
     } else {
-      jQuery('#show_unlayered,#hide_unlayered').show();
+      $('#show_unlayered,#hide_unlayered').show();
     } 
   },
   addCommas: function(str) {
@@ -365,137 +365,137 @@ jQuery.extend({
     return x1 + x2;
   },
   observeToolListeners: function () {
-    jQuery("#buttons a.btn-a:not(.btn-a-active)").live('click', function(e) {
+    $("#buttons a.btn-a:not(.btn-a-active)").live('click', function(e) {
       e.preventDefault();
-      var top_pos = jQuery(this).position().top + jQuery(this).height() + 10;
-      var left_pos = jQuery(this).width() - 208;
-      jQuery('.text-layers-popup').css({ position: 'absolute', top: top_pos, left: left_pos, "z-index": 1 }).fadeIn(200);
-      jQuery(this).addClass("btn-a-active");
+      var top_pos = $(this).position().top + $(this).height() + 10;
+      var left_pos = $(this).width() - 208;
+      $('.text-layers-popup').css({ position: 'absolute', top: top_pos, left: left_pos, "z-index": 1 }).fadeIn(200);
+      $(this).addClass("btn-a-active");
     });
-    jQuery("#buttons a.btn-a-active").live('click', function(e) {
+    $("#buttons a.btn-a-active").live('click', function(e) {
       e.preventDefault();
-      jQuery('.text-layers-popup').fadeOut(200);
-      jQuery(this).removeClass("btn-a-active");
+      $('.text-layers-popup').fadeOut(200);
+      $(this).removeClass("btn-a-active");
     });
-    jQuery('#quickbar_tools:not(.active)').live('click', function(e) {
+    $('#quickbar_tools:not(.active)').live('click', function(e) {
       e.preventDefault();
-      var top_pos = jQuery(this).position().top + jQuery(this).height() + 8;
-      var left_pos = jQuery(this).position().left - 198 + jQuery(this).width();
-      jQuery('.text-layers-popup').css({ position: 'fixed', top: top_pos, left: left_pos, "z-index": 5 }).fadeIn(200);
-      jQuery(this).addClass('active');
+      var top_pos = $(this).position().top + $(this).height() + 8;
+      var left_pos = $(this).position().left - 198 + $(this).width();
+      $('.text-layers-popup').css({ position: 'fixed', top: top_pos, left: left_pos, "z-index": 5 }).fadeIn(200);
+      $(this).addClass('active');
     });
-    jQuery('#quickbar_tools.active').live('click', function(e) {
+    $('#quickbar_tools.active').live('click', function(e) {
       e.preventDefault();
-      jQuery('.text-layers-popup').fadeOut(200);
-      jQuery(this).removeClass('active');
+      $('.text-layers-popup').fadeOut(200);
+      $(this).removeClass('active');
     });
-    jQuery('#layers li').each(function(i, el) {
-      layer_info[jQuery(el).data('id')] = {
-        'hex' : jQuery(el).data('hex'),
-        'name' : jQuery(el).data('name')
+    $('#layers li').each(function(i, el) {
+      layer_info[$(el).data('id')] = {
+        'hex' : $(el).data('hex'),
+        'name' : $(el).data('name')
       };
-      jQuery('span.annotation-control-' + jQuery(el).data('id')).css('background', '#' + jQuery(el).data('hex'));
+      $('span.annotation-control-' + $(el).data('id')).css('background', '#' + $(el).data('hex'));
     });
-    jQuery('#author_edits').click(function(e) {
+    $('#author_edits').click(function(e) {
       e.preventDefault();
       last_data = original_data;
-      jQuery.loadState();
+      $.loadState();
     });
-    jQuery('#full_text').click(function(e) {
+    $('#full_text').click(function(e) {
       e.preventDefault();
-      var el = jQuery(this);
-      jQuery.showGlobalSpinnerNode();
-      jQuery('.unlayered-ellipsis:visible,.annotation-ellipsis:visible').click();
+      var el = $(this);
+      $.showGlobalSpinnerNode();
+      $('.unlayered-ellipsis:visible,.annotation-ellipsis:visible').click();
 
-      jQuery.each(jQuery('#layers a.hide_show'), function(i, el) {
-        jQuery(el).html('HIDE "' + jQuery(el).parent().data('name') + '"');
+      $.each($('#layers a.hide_show'), function(i, el) {
+        $(el).html('HIDE "' + $(el).parent().data('name') + '"');
       });
 
-      jQuery('#layers a.shown').removeClass('shown');
-      jQuery.hideShowUnlayeredOptions();
-      jQuery.hideGlobalSpinnerNode();
+      $('#layers a.shown').removeClass('shown');
+      $.hideShowUnlayeredOptions();
+      $.hideGlobalSpinnerNode();
     });
 
-    jQuery('#show_unlayered a').click(function(e) {
+    $('#show_unlayered a').click(function(e) {
       e.preventDefault();
-      jQuery.showGlobalSpinnerNode();
-      jQuery('.unlayered-ellipsis:visible').click();
-      jQuery('div.article').removeClass('hide_unlayered').addClass('show_unlayered');
-      jQuery.hideShowUnlayeredOptions();
-      jQuery.hideGlobalSpinnerNode();
+      $.showGlobalSpinnerNode();
+      $('.unlayered-ellipsis:visible').click();
+      $('div.article').removeClass('hide_unlayered').addClass('show_unlayered');
+      $.hideShowUnlayeredOptions();
+      $.hideGlobalSpinnerNode();
     });
-    jQuery('#hide_unlayered a').click(function(e) {
+    $('#hide_unlayered a').click(function(e) {
       e.preventDefault();
-      jQuery.showGlobalSpinnerNode();
-      jQuery('div.article').removeClass('show_unlayered').addClass('hide_unlayered');
-      jQuery('div.article .unlayered-control-start').click();
-      if(jQuery('.unlayered-control-end.unlayered-control-1').size()) {
-        jQuery('.unlayered-control-end.unlayered-control-1').click();
+      $.showGlobalSpinnerNode();
+      $('div.article').removeClass('show_unlayered').addClass('hide_unlayered');
+      $('div.article .unlayered-control-start').click();
+      if($('.unlayered-control-end.unlayered-control-1').size()) {
+        $('.unlayered-control-end.unlayered-control-1').click();
       }
-      jQuery.hideShowUnlayeredOptions();
-      jQuery.hideGlobalSpinnerNode();
+      $.hideShowUnlayeredOptions();
+      $.hideGlobalSpinnerNode();
     });
 
-    jQuery('#show_annotations a').not('.inactive').click(function(e) {
+    $('#show_annotations a').not('.inactive').click(function(e) {
       e.preventDefault();
-      jQuery.showGlobalSpinnerNode();
-      jQuery('.annotation-content').css('display', 'inline-block');
-      jQuery.hideGlobalSpinnerNode();
-      jQuery.hideShowAnnotationOptions(false);
+      $.showGlobalSpinnerNode();
+      $('.annotation-content').css('display', 'inline-block');
+      $.hideGlobalSpinnerNode();
+      $.hideShowAnnotationOptions(false);
     });
-    jQuery('#hide_annotations a').not('.inactive').click(function(e) {
+    $('#hide_annotations a').not('.inactive').click(function(e) {
       e.preventDefault();
-      jQuery.showGlobalSpinnerNode();
-      jQuery('.annotation-content').css('display', 'none');
-      jQuery.hideGlobalSpinnerNode();
-      jQuery.hideShowAnnotationOptions(false);
+      $.showGlobalSpinnerNode();
+      $('.annotation-content').css('display', 'none');
+      $.hideGlobalSpinnerNode();
+      $.hideShowAnnotationOptions(false);
     });
 
-    jQuery('#layers .hide_show').live('click', function(e) {
+    $('#layers .hide_show').live('click', function(e) {
       e.preventDefault();
-      jQuery.showGlobalSpinnerNode();
+      $.showGlobalSpinnerNode();
 
-      var el = jQuery(this);
+      var el = $(this);
       var layer_id = el.parent().data('id');
       var layer_name = el.parent().data('name');
       if(el.html().match("SHOW ")) {
         el.html('HIDE "' + layer_name + '"');
-        jQuery('.annotation-ellipsis-' + layer_id).click();
+        $('.annotation-ellipsis-' + layer_id).click();
       } else {
         el.html('SHOW "' + layer_name + '"');
-        jQuery('.layered-control-start.layered-control-' + layer_id).click();
+        $('.layered-control-start.layered-control-' + layer_id).click();
       }
-      jQuery.hideGlobalSpinnerNode();
+      $.hideGlobalSpinnerNode();
     });
 
-    jQuery('#layers_highlights .link-o').live('click', function(e) {
+    $('#layers_highlights .link-o').live('click', function(e) {
       e.preventDefault();
-      var el = jQuery(this);
+      var el = $(this);
       var id = el.parent().data('id');
       var layer_name = el.parent().data('name');
-      var indicator_hex = jQuery(this).find('.indicator').css('background-color');
+      var indicator_hex = $(this).find('.indicator').css('background-color');
 
-      if(jQuery('#hide_heatmap').is(':visible')) {
-        jQuery('#hide_heatmap').click();
+      if($('#hide_heatmap').is(':visible')) {
+        $('#hide_heatmap').click();
       }
 
-      if(jQuery('#layers a.' + id).html().match("SHOW")) {
-        jQuery('#layers a.' + id).click();
+      if($('#layers a.' + id).html().match("SHOW")) {
+        $('#layers a.' + id).click();
       }
       if(el.hasClass('highlighted')) {
 
-        jQuery('div.article .' + id + ',.ann-annotation-' + id).css('display', 'inline-block');
-        jQuery('div.article tt.' + id).css('display', 'inline');
-        jQuery('.annotation-ellipsis-' + id).css('display', 'none');
+        $('div.article .' + id + ',.ann-annotation-' + id).css('display', 'inline-block');
+        $('div.article tt.' + id).css('display', 'inline');
+        $('.annotation-ellipsis-' + id).css('display', 'none');
         var hex = '#' + layer_info[id].hex;
-        jQuery.each(jQuery('tt.' + id), function(i, el) {
-          var current = jQuery(el);
+        $.each($('tt.' + id), function(i, el) {
+          var current = $(el);
           var highlight_colors = current.data('highlight_colors');
-          highlight_colors.splice(jQuery.inArray(hex, highlight_colors), 1);
+          highlight_colors.splice($.inArray(hex, highlight_colors), 1);
           var current_hex = '#FFFFFF';
           var opacity = 0.4 / highlight_colors.length;
-          jQuery.each(highlight_colors, function(i, color) {
-            var color_combine = jQuery.xcolor.opacity(current_hex, color, opacity);
+          $.each(highlight_colors, function(i, color) {
+            var color_combine = $.xcolor.opacity(current_hex, color, opacity);
             current_hex = color_combine.getHex();
           });
           if(current_hex == '#FFFFFF') {
@@ -507,13 +507,13 @@ jQuery.extend({
         });
         el.removeClass('highlighted').html('HIGHLIGHT "' + layer_name + '"<span class="indicator" style="background-color:' + indicator_hex + '"></span>');
       } else {
-        jQuery('div.article .' + id + ',.ann-annotation-' + id).css('display', 'inline-block');
-        jQuery('div.article tt.' + id).css('display', 'inline');
-        jQuery('.annotation-ellipsis-' + id).css('display', 'none');
+        $('div.article .' + id + ',.ann-annotation-' + id).css('display', 'inline-block');
+        $('div.article tt.' + id).css('display', 'inline');
+        $('.annotation-ellipsis-' + id).css('display', 'none');
 
         var hex = '#' + layer_info[id].hex;
-        jQuery.each(jQuery('tt.' + id), function(i, c) {
-          var current = jQuery(c);
+        $.each($('tt.' + id), function(i, c) {
+          var current = $(c);
           var highlight_colors = current.data('highlight_colors');
           if(highlight_colors) {
             highlight_colors.push(hex);
@@ -522,8 +522,8 @@ jQuery.extend({
           }
           var current_hex = '#FFFFFF';
           var opacity = 0.4 / highlight_colors.length;
-          jQuery.each(highlight_colors, function(i, color) {
-            var color_combine = jQuery.xcolor.opacity(current_hex, color, opacity);
+          $.each(highlight_colors, function(i, color) {
+            var color_combine = $.xcolor.opacity(current_hex, color, opacity);
             current_hex = color_combine.getHex();
           });
           current.css('background', current_hex);
@@ -534,146 +534,146 @@ jQuery.extend({
     });
   },
   observePrintListeners: function() {
-    jQuery('#fixed_print,#quickbar_print').click(function(e) {
+    $('#fixed_print,#quickbar_print').click(function(e) {
       e.preventDefault();
-      jQuery('#collage_print').submit();
+      $('#collage_print').submit();
     });
-    jQuery('form#collage_print').submit(function() {
-      var data = jQuery.retrieveState();
+    $('form#collage_print').submit(function() {
+      var data = $.retrieveState();
   
       //Note: is:visible not working here
-      if(jQuery('a#hide_heatmap').css('display') == 'block' && !jQuery('a#hide_heatmap:first').is('.inactive')) {
+      if($('a#hide_heatmap').css('display') == 'block' && !$('a#hide_heatmap:first').is('.inactive')) {
         data.load_heatmap = true;
       }
 
-      data.font_size = jQuery('#fontsize a.active').data('value');
-      data.font_face = jQuery('#fontface a.active').data('value');
-      jQuery('#state').val(JSON.stringify(data));
+      data.font_size = $('#fontsize a.active').data('value');
+      data.font_face = $('#fontface a.active').data('value');
+      $('#state').val(JSON.stringify(data));
     });
   },
   recordCollageState: function(data, show_message) {
-    var words_shown = jQuery('div.article tt').filter(':visible').size();
-    jQuery.ajax({
+    var words_shown = $('div.article tt').filter(':visible').size();
+    $.ajax({
       type: 'POST',
       cache: false,
       data: {
         readable_state: data,
         words_shown: words_shown
       },
-      url: jQuery.rootPath() + 'collages/' + jQuery.getItemId() + '/save_readable_state',
+      url: $.rootPath() + 'collages/' + $.getItemId() + '/save_readable_state',
       success: function(results){
         if(show_message) {
-          jQuery('#autosave').html('Updated at: ' + results.time);
-          jQuery.updateWordCount();
+          $('#autosave').html('Updated at: ' + results.time);
+          $.updateWordCount();
         }
       }
     });
   },
   updateWordCount: function() {
     var layered = all_tts.size() - unlayered_tts.size();
-    jQuery('#word_stats').html(layered + ' layered, ' + unlayered_tts.size() + ' unlayered');
+    $('#word_stats').html(layered + ' layered, ' + unlayered_tts.size() + ' unlayered');
   },
   retrieveState: function() {
     var data = {};
-    jQuery('.unlayered-ellipsis:visible').each(function(i, el) {
-      data['#' + jQuery(el).attr('id')] = jQuery(el).css('display');  
+    $('.unlayered-ellipsis:visible').each(function(i, el) {
+      data['#' + $(el).attr('id')] = $(el).css('display');  
     });
-    jQuery('.annotation-ellipsis:visible').each(function(i, el) {
-      data['#' + jQuery(el).attr('id')] = jQuery(el).css('display');  
+    $('.annotation-ellipsis:visible').each(function(i, el) {
+      data['#' + $(el).attr('id')] = $(el).css('display');  
     });
-    jQuery('span.annotation-content:visible').each(function(i, el) {
-      data['#' + jQuery(el).attr('id')] = jQuery(el).css('display');  
+    $('span.annotation-content:visible').each(function(i, el) {
+      data['#' + $(el).attr('id')] = $(el).css('display');  
     });
       
     data.highlights = {};
-    jQuery.each(jQuery('.link-o.highlighted'), function(i, el) {
-      data.highlights[jQuery(el).parent().data('id')] = jQuery(el).parent().data('hex');
+    $.each($('.link-o.highlighted'), function(i, el) {
+      data.highlights[$(el).parent().data('id')] = $(el).parent().data('hex');
     });
 
     return data;
   },
   listenToRecordCollageState: function() {
     setInterval(function(i) {
-      var data = jQuery.retrieveState();
-      if(jQuery('#edit_toggle').hasClass('edit_mode') && (JSON.stringify(data) != JSON.stringify(last_data))) {
+      var data = $.retrieveState();
+      if($('#edit_toggle').hasClass('edit_mode') && (JSON.stringify(data) != JSON.stringify(last_data))) {
         last_data = data;
-        jQuery.recordCollageState(JSON.stringify(data), true);
+        $.recordCollageState(JSON.stringify(data), true);
       }
     }, 1000); 
   },
   loadState: function() {
-    jQuery.each(last_data, function(i, e) {
+    $.each(last_data, function(i, e) {
       if(i.match(/#unlayered-ellipsis/)) {
         var id = i.replace(/#unlayered-ellipsis-/, '');
-        jQuery('.unlayered-control-' + id + ':first').click();
+        $('.unlayered-control-' + id + ':first').click();
       } else if(i.match(/#annotation-ellipsis/) && e != 'none') {
-        jQuery(i).css('display', 'inline');
+        $(i).css('display', 'inline');
         var annotation_id = i.replace(/#annotation-ellipsis-/, '');
-        var subset = jQuery('tt.a' + annotation_id);
+        var subset = $('tt.a' + annotation_id);
         subset.css('display', 'none');
-        jQuery.resetParentDisplay(subset);
+        $.resetParentDisplay(subset);
       } else if(i.match(/^\.a/)) { //Backwards compatibility update
-        jQuery(i).css('display', 'inline');
+        $(i).css('display', 'inline');
         var annotation_id = i.replace(/^\.a/, '');
-        jQuery('#annotation-ellipsis-' + annotation_id).hide();
+        $('#annotation-ellipsis-' + annotation_id).hide();
       } else if(i == 'highlights') {
         $.each(e, function(j, k) {
           $("ul#layers_highlights li[data-id='" + j + "'] a").click();
         });
       } else {
-        jQuery(i).css('display', e);
+        $(i).css('display', e);
       }
     });
-    jQuery.observeWords();
+    $.observeWords();
     if(access_results.can_edit_annotations) {
-      jQuery('#edit_toggle').click();
-      jQuery.toggleEditMode(true);
-      jQuery('.default-hidden').css('color', '#000');
-      jQuery('#heatmap_toggle').addClass('inactive');
+      $('#edit_toggle').click();
+      $.toggleEditMode(true);
+      $('.default-hidden').css('color', '#000');
+      $('#heatmap_toggle').addClass('inactive');
     } else {
-      jQuery('#heatmap_toggle').removeClass('inactive');
-      jQuery.toggleEditMode(false);
-      jQuery.checkForPanelAdjust();
+      $('#heatmap_toggle').removeClass('inactive');
+      $.toggleEditMode(false);
+      $.checkForPanelAdjust();
     }
-    if(jQuery.cookie('scroll_pos')) {
-      jQuery(window).scrollTop(jQuery.cookie('scroll_pos'));
-      jQuery.cookie('scroll_pos', null);
+    if($.cookie('scroll_pos')) {
+      $(window).scrollTop($.cookie('scroll_pos'));
+      $.cookie('scroll_pos', null);
     }
-    jQuery.hideShowUnlayeredOptions();
-    jQuery.hideShowAnnotationOptions(true);
+    $.hideShowUnlayeredOptions();
+    $.hideShowAnnotationOptions(true);
   }, 
 
   editAnnotationMarkup: function(annotation, color_map) {
     var old_annotation = clean_annotations["a" + annotation.id];
    
-    var els = jQuery('.a' + annotation.id);
+    var els = $('.a' + annotation.id);
     //Manage layers and layer toolbar
-    jQuery.each(old_annotation.layers, function(i, layer) {
+    $.each(old_annotation.layers, function(i, layer) {
       // This makes the assumption that the els are not layered by the same layer from another annotation
       // ie two of the same layers do not overlap
       els.removeClass('l' + layer.id);
-      jQuery('.layered-control-' + annotation.id).removeClass('layered-control-l' + layer.id);
-      jQuery('#annotation-ellipsis-' + annotation.id).removeClass('annotation-ellipsis-l' + layer.id);
-      jQuery('.annotation-control-' + annotation.id).removeClass('annotation-control-l' + layer.id);
-      jQuery('#annotation-asterisk-' + annotation.id).removeClass('l' + layer.id);
-      if(jQuery('tt.l' + layer.id).not(els).length == 0) {
-        jQuery("#layers li[data-id='l" + layer.id + "']").remove();
+      $('.layered-control-' + annotation.id).removeClass('layered-control-l' + layer.id);
+      $('#annotation-ellipsis-' + annotation.id).removeClass('annotation-ellipsis-l' + layer.id);
+      $('.annotation-control-' + annotation.id).removeClass('annotation-control-l' + layer.id);
+      $('#annotation-asterisk-' + annotation.id).removeClass('l' + layer.id);
+      if($('tt.l' + layer.id).not(els).length == 0) {
+        $("#layers li[data-id='l" + layer.id + "']").remove();
         delete layer_info['l' + layer.id];
       }
     });
-    jQuery.each(annotation.layers, function(i, layer) {
+    $.each(annotation.layers, function(i, layer) {
       els.addClass('l' + layer.id);
-      jQuery('.layered-control-' + annotation.id).addClass('layered-control-l' + layer.id);
-      jQuery('#annotation-ellipsis-' + annotation.id).addClass('annotation-ellipsis-l' + layer.id);
-      jQuery('.annotation-control-' + annotation.id).addClass('annotation-control-l' + layer.id);
-      jQuery('#annotation-asterisk-' + annotation.id).addClass('l' + layer.id);
-      if(!jQuery("#layers li[data-id='l" + layer.id + "']").length) {
+      $('.layered-control-' + annotation.id).addClass('layered-control-l' + layer.id);
+      $('#annotation-ellipsis-' + annotation.id).addClass('annotation-ellipsis-l' + layer.id);
+      $('.annotation-control-' + annotation.id).addClass('annotation-control-l' + layer.id);
+      $('#annotation-asterisk-' + annotation.id).addClass('l' + layer.id);
+      if(!$("#layers li[data-id='l" + layer.id + "']").length) {
         layer.hex = color_map[layer.id];
 
-        var new_node = jQuery(jQuery.mustache(layer_tools_visibility, layer));
-        new_node.appendTo(jQuery('#layers'));
-        var new_node2 = jQuery(jQuery.mustache(layer_tools_highlights, layer));
-        new_node2.appendTo(jQuery('#layers_highlights'));
+        var new_node = $($.mustache(layer_tools_visibility, layer));
+        new_node.appendTo($('#layers'));
+        var new_node2 = $($.mustache(layer_tools_highlights, layer));
+        new_node2.appendTo($('#layers_highlights'));
 
         layer_info['l' + layer.id] = {
           'hex' : color_map[layer.id],
@@ -683,19 +683,19 @@ jQuery.extend({
     });
 
     //Rehighlight elements
-    jQuery.each(els, function(i, c) {
-      var current = jQuery(c);
+    $.each(els, function(i, c) {
+      var current = $(c);
       var highlight_colors = new Array();
-      jQuery.each(jQuery('#layers li'), function(i, el) {
-        if(jQuery(el).find('a.highlighted').size() && current.hasClass(jQuery(el).data('id'))) {
-          highlight_colors.push(layer_color_map[jQuery(el).data('id')]);
+      $.each($('#layers li'), function(i, el) {
+        if($(el).find('a.highlighted').size() && current.hasClass($(el).data('id'))) {
+          highlight_colors.push(layer_color_map[$(el).data('id')]);
         }
       });
       if(highlight_colors.length > 0) {
         var current_hex = '#FFFFFF';
         var opacity = 0.4 / highlight_colors.length;
-        jQuery.each(highlight_colors, function(i, color) {
-          var color_combine = jQuery.xcolor.opacity(current_hex, color, opacity);
+        $.each(highlight_colors, function(i, color) {
+          var color_combine = $.xcolor.opacity(current_hex, color, opacity);
           current_hex = color_combine.getHex();
         });
         current.css('background', current_hex);
@@ -705,10 +705,10 @@ jQuery.extend({
       }
     });
 
-    jQuery('#layers li').each(function(i, el) {
-      jQuery.each(annotation.layers, function(j, layer) {
-        if(jQuery(el).data('id') == 'l' + layer.id) {
-          jQuery('.annotation-control-' + annotation.id).css('background', '#' + color_map[layer.id]);
+    $('#layers li').each(function(i, el) {
+      $.each(annotation.layers, function(j, layer) {
+        if($(el).data('id') == 'l' + layer.id) {
+          $('.annotation-control-' + annotation.id).css('background', '#' + color_map[layer.id]);
         }
       });
     });
@@ -719,16 +719,16 @@ jQuery.extend({
     //c) If text removed now but existed before (remove markup)
     //d) If no text before and no text after (do nothing)
     if(old_annotation.annotation != "" && annotation.annotation != "") {
-      jQuery('span#annotation-content-' + annotation.id).html(annotation.annotation);
+      $('span#annotation-content-' + annotation.id).html(annotation.annotation);
     } else if(old_annotation.annotation == "" && annotation.annotation != "") {
       var data = {
         "layers": annotation.layers,
         "annotation_id": annotation.id,
         "annotation_content": annotation.annotation
       };
-      jQuery(jQuery.mustache(annotation_template, data)).insertAfter(jQuery('.annotation-control-' + annotation.id).last());
+      $($.mustache(annotation_template, data)).insertAfter($('.annotation-control-' + annotation.id).last());
     } else if(old_annotation.annotation != "" && annotation.annotation == "") {
-      jQuery('#annotation-content-' + annotation.id + ',#annotation-asterisk-' + annotation.id).remove();
+      $('#annotation-content-' + annotation.id + ',#annotation-asterisk-' + annotation.id).remove();
     }
     
     //Replace in data
@@ -736,29 +736,29 @@ jQuery.extend({
   },
   deleteAnnotationMarkup: function(annotation) {
     //Handle class, layer assignment
-    var els = jQuery('.a' + annotation.id);
+    var els = $('.a' + annotation.id);
     els.removeClass('a' + annotation.id);
-    jQuery.each(els, function(i, el) {
-      var p = jQuery(el);
+    $.each(els, function(i, el) {
+      var p = $(el);
       if(!(/a[0-9]/).test(p.attr('class'))) {
         p.removeClass('a');
       }
     });
-    jQuery.each(annotation.layers, function(i, layer) {
+    $.each(annotation.layers, function(i, layer) {
       els.removeClass('l' + layer.id);
       var hex = layer_info['l' + layer.id].hex;
-      jQuery.each(els, function(i, el) {
-        var current = jQuery(el);
+      $.each(els, function(i, el) {
+        var current = $(el);
         var highlight_colors = current.data('highlight_colors');
         if(highlight_colors) {
-          highlight_colors.splice(jQuery.inArray(hex, highlight_colors), 1);
+          highlight_colors.splice($.inArray(hex, highlight_colors), 1);
         } else {
           highlight_colors = new Array();
         }
         var opacity = 0.4 / highlight_colors.length;
         var current_hex = '#FFFFFF';
-        jQuery.each(highlight_colors, function(i, color) {
-          var color_combine = jQuery.xcolor.opacity(current_hex, color, opacity);
+        $.each(highlight_colors, function(i, color) {
+          var color_combine = $.xcolor.opacity(current_hex, color, opacity);
           current_hex = color_combine.getHex();
         });
         if(current_hex == '#FFFFFF') {
@@ -768,60 +768,60 @@ jQuery.extend({
         }
         current.data('highlight_colors', highlight_colors);
       });
-      if(jQuery('tt.l' + layer.id).not(els).length == 0) {
-        jQuery("#layers li[data-id='l" + layer.id + "']").remove();
-        jQuery("#layers_highlights li[data-id='l" + layer.id + "']").remove();
+      if($('tt.l' + layer.id).not(els).length == 0) {
+        $("#layers li[data-id='l" + layer.id + "']").remove();
+        $("#layers_highlights li[data-id='l" + layer.id + "']").remove();
         delete layer_info['l' + layer.id];
       }
     });
-    jQuery.updateLayerCount();
+    $.updateLayerCount();
 
     //Remove annotation markup
-    jQuery('.annotation-control-' + annotation.id + ',.layered-control-' + annotation.id).remove();
-    jQuery('#annotation-ellipsis-' + annotation.id + ',#annotation-asterisk-' + annotation.id).remove();
-    jQuery('#annotation-content-' + annotation.id).remove();
+    $('.annotation-control-' + annotation.id + ',.layered-control-' + annotation.id).remove();
+    $('#annotation-ellipsis-' + annotation.id + ',#annotation-asterisk-' + annotation.id).remove();
+    $('#annotation-content-' + annotation.id).remove();
 
     //Handle Unlayered Controls
     var annotation_start = parseInt(annotation.annotation_start.replace(/^t/, ''));
     var annotation_end = parseInt(annotation.annotation_end.replace(/^t/, ''));
-    jQuery.removeUnlayeredControls(els);
-    if(!jQuery('tt#t' + annotation_start).hasClass('a')) {
-      jQuery('tt#t' + annotation_start).removeClass('border_annotation_start');
+    $.removeUnlayeredControls(els);
+    if(!$('tt#t' + annotation_start).hasClass('a')) {
+      $('tt#t' + annotation_start).removeClass('border_annotation_start');
     }
-    if(!jQuery('tt#t' + annotation_end).hasClass('a')) {
-      jQuery('tt#t' + annotation_end).removeClass('border_annotation_end');
+    if(!$('tt#t' + annotation_end).hasClass('a')) {
+      $('tt#t' + annotation_end).removeClass('border_annotation_end');
     }
     for(var i = annotation_start + 1; i <= annotation_end + 1; i++) {
-      if(jQuery('tt#t' + i).hasClass('a') && !jQuery('tt#t' + (i - 1)).hasClass('a')) {
-        jQuery('tt#t' + i).addClass('border_annotation_start');
+      if($('tt#t' + i).hasClass('a') && !$('tt#t' + (i - 1)).hasClass('a')) {
+        $('tt#t' + i).addClass('border_annotation_start');
       }
-      if(!jQuery('tt#t' + i).hasClass('a') && jQuery('tt#t' + (i - 1)).hasClass('a')) {
-        jQuery('tt#t' + (i - 1)).addClass('border_annotation_end');
+      if(!$('tt#t' + i).hasClass('a') && $('tt#t' + (i - 1)).hasClass('a')) {
+        $('tt#t' + (i - 1)).addClass('border_annotation_end');
       }
     }
-    jQuery.addUnlayeredControls(els);
+    $.addUnlayeredControls(els);
 
     //Edge case where annotation on first tt is deleted
-    if(!jQuery('tt#t1').is('.a') && jQuery('#unlayered-ellipsis-1').size() == 0) {
-      jQuery('<a class="unlayered-ellipsis" id="unlayered-ellipsis-1" data-id="1" href="#">[...]</a>').css('display', 'none').insertBefore(jQuery('tt#t1'));
-      if(jQuery('tt#t' + update_unlayered_end).is('.a')) {
+    if(!$('tt#t1').is('.a') && $('#unlayered-ellipsis-1').size() == 0) {
+      $('<a class="unlayered-ellipsis" id="unlayered-ellipsis-1" data-id="1" href="#">[...]</a>').css('display', 'none').insertBefore($('tt#t1'));
+      if($('tt#t' + update_unlayered_end).is('.a')) {
         var data = { "unlayered_end_id" : 1, "position" : update_unlayered_end - 1 };
-        jQuery(jQuery.mustache(unlayered_end_template, data)).insertAfter(jQuery('tt#t' + (update_unlayered_end - 1)));
+        $($.mustache(unlayered_end_template, data)).insertAfter($('tt#t' + (update_unlayered_end - 1)));
       } else {
-        var node_to_modify = jQuery('.unlayered-control-' + update_unlayered_end);
+        var node_to_modify = $('.unlayered-control-' + update_unlayered_end);
         node_to_modify.removeClass('.unlayered-control-' + update_unlayered_end).addClass('unlayered-control-1').data('id', 1);
         subset = all_tts.slice(0, node_to_modify.data('position'));
         subset.css('display', 'inline');
-        jQuery.hideShowUnlayeredOptions();
+        $.hideShowUnlayeredOptions();
       }
     }
 
     //Delete from data
     delete annotations["a" + annotation.id];
     delete clean_annotations["a" + annotation.id];
-    jQuery.updateAnnotationCount();
+    $.updateAnnotationCount();
 
-    unlayered_tts = jQuery('div.article tt:not(.a)');
+    unlayered_tts = $('div.article tt:not(.a)');
   },
   markupAnnotation: function(annotation, layer_color_map, page_load) {
     var annotation_start = parseInt(annotation.annotation_start.replace(/^t/, ''));
@@ -830,24 +830,24 @@ jQuery.extend({
 
     //Handle class, layer assignment
     els.addClass('a a' + annotation.id);
-    jQuery.each(annotation.layers, function(i, layer) {
+    $.each(annotation.layers, function(i, layer) {
       els.addClass('l' + layer.id);
-      if(!jQuery("#layers li[data-id='l" + layer.id + "']").size()) {
+      if(!$("#layers li[data-id='l" + layer.id + "']").size()) {
         layer.hex = layer_color_map[layer.id];
 
-        var new_node = jQuery(jQuery.mustache(layer_tools_visibility, layer));
-        new_node.appendTo(jQuery('#layers'));
-        var new_node2 = jQuery(jQuery.mustache(layer_tools_highlights, layer));
-        new_node2.appendTo(jQuery('#layers_highlights'));
+        var new_node = $($.mustache(layer_tools_visibility, layer));
+        new_node.appendTo($('#layers'));
+        var new_node2 = $($.mustache(layer_tools_highlights, layer));
+        new_node2.appendTo($('#layers_highlights'));
 
         layer_info['l' + layer.id] = {
           'hex' : layer_color_map[layer.id],
           'name' : layer.name
         };
-      } else if(jQuery("#layers li[data-id='l" + layer.id + "'] .link-o").hasClass('highlighted')) {
+      } else if($("#layers li[data-id='l" + layer.id + "'] .link-o").hasClass('highlighted')) {
         var hex = layer_color_map[layer.id];
-        jQuery.each(els, function(i, c) {
-          var current = jQuery(c);
+        $.each(els, function(i, c) {
+          var current = $(c);
           var highlight_colors = current.data('highlight_colors');
           if(highlight_colors) {
             highlight_colors.push(hex);
@@ -856,8 +856,8 @@ jQuery.extend({
           }
           var current_hex = '#FFFFFF';
           var opacity = 0.4 / highlight_colors.length;
-          jQuery.each(highlight_colors, function(i, color) {
-            var color_combine = jQuery.xcolor.opacity(current_hex, color, opacity);
+          $.each(highlight_colors, function(i, color) {
+            var color_combine = $.xcolor.opacity(current_hex, color, opacity);
             current_hex = color_combine.getHex();
           });
           current.css('background', current_hex);
@@ -865,7 +865,7 @@ jQuery.extend({
         });
       }
     });
-    jQuery.updateLayerCount();
+    $.updateLayerCount();
 
     //Add markup
     var data = {
@@ -875,32 +875,32 @@ jQuery.extend({
       show_annotation: (annotation.annotation == '' ? false : true)
     };
 
-    if(jQuery('tt#t' + annotation_start).parent().hasClass('footnote')) {
-      jQuery(jQuery.mustache(annotation_start_template, data)).insertBefore(jQuery('tt#t' + annotation_start).parent()); 
+    if($('tt#t' + annotation_start).parent().hasClass('footnote')) {
+      $($.mustache(annotation_start_template, data)).insertBefore($('tt#t' + annotation_start).parent()); 
     } else {
-      jQuery(jQuery.mustache(annotation_start_template, data)).insertBefore(jQuery('tt#t' + annotation_start)); 
+      $($.mustache(annotation_start_template, data)).insertBefore($('tt#t' + annotation_start)); 
     }
-    jQuery(jQuery.mustache(annotation_end_template, data)).insertAfter(jQuery('tt#t' + annotation_end));
+    $($.mustache(annotation_end_template, data)).insertAfter($('tt#t' + annotation_end));
 
     //Important: to allow for HTML in annotation markup
-    jQuery('#annotation-content-' + annotation.id).html(annotation.annotation);
+    $('#annotation-content-' + annotation.id).html(annotation.annotation);
 
     //Handle Unlayered Controls
     update_unlayered_end = 0;
-    jQuery.removeUnlayeredControls(els);
+    $.removeUnlayeredControls(els);
     els.removeClass('border_annotation_start border_annotation_end');
-    if(!jQuery('tt#t' + (annotation_start - 1)).hasClass('a')) {
-      jQuery('tt#t' + annotation_start).addClass('border_annotation_start');
+    if(!$('tt#t' + (annotation_start - 1)).hasClass('a')) {
+      $('tt#t' + annotation_start).addClass('border_annotation_start');
     }
-    if(!jQuery('tt#t' + (annotation_end + 1)).hasClass('a')) {
-      jQuery('tt#t' + annotation_end).addClass('border_annotation_end');
+    if(!$('tt#t' + (annotation_end + 1)).hasClass('a')) {
+      $('tt#t' + annotation_end).addClass('border_annotation_end');
     }
     //Weird edge case where layers are highlighted next to eachother
-    if(jQuery('.unlayered-control-start.unlayered-control-' + annotation_start).size()) {
-      jQuery('.unlayered-control-start.unlayered-control-' + annotation_start).remove();
-      jQuery('#unlayered-ellipsis-' + annotation_start).remove();
-      if(jQuery('.unlayered-control-end.unlayered-control-' + annotation_start).size()) {
-        var el = jQuery('.unlayered-control-end.unlayered-control-' + annotation_start);
+    if($('.unlayered-control-start.unlayered-control-' + annotation_start).size()) {
+      $('.unlayered-control-start.unlayered-control-' + annotation_start).remove();
+      $('#unlayered-ellipsis-' + annotation_start).remove();
+      if($('.unlayered-control-end.unlayered-control-' + annotation_start).size()) {
+        var el = $('.unlayered-control-end.unlayered-control-' + annotation_start);
         var renumber_tt_id = el.data('position') - 1;
         var renumber_last_annotation = all_tts.slice(0, renumber_tt_id).filter('.a:last');
         var new_unlayered_end_id = renumber_last_annotation.data('id') + 1;
@@ -913,60 +913,60 @@ jQuery.extend({
     //Another edge case
     if(update_unlayered_end != 0 && els.last().is('.border_annotation_end')) {
       var next_id = els.last().data('id') + 1;
-      jQuery('.unlayered-control-' + update_unlayered_end)
+      $('.unlayered-control-' + update_unlayered_end)
         .removeClass('unlayered-control-' + update_unlayered_end)
         .addClass('unlayered-control-' + next_id)
         .data('id', next_id);
     }
-    if(annotation_start == 1 && jQuery('#unlayered-ellipsis-1').size() == 1) {
-      jQuery('#unlayered-ellipsis-1').remove();
+    if(annotation_start == 1 && $('#unlayered-ellipsis-1').size() == 1) {
+      $('#unlayered-ellipsis-1').remove();
     }
 
-    if(jQuery('.unlayered-position-' + annotation_end).size()) {
-      jQuery('.unlayered-position-' + annotation_end).remove();
+    if($('.unlayered-position-' + annotation_end).size()) {
+      $('.unlayered-position-' + annotation_end).remove();
     }
-    jQuery.addUnlayeredControls(els);
+    $.addUnlayeredControls(els);
 
     //Display highlight and dividers
-    jQuery.each(annotation.layers, function(i, layer) {
-      jQuery('span.annotation-control-l' + layer.id).css('background', '#' + layer_color_map[layer.id]);
+    $.each(annotation.layers, function(i, layer) {
+      $('span.annotation-control-l' + layer.id).css('background', '#' + layer_color_map[layer.id]);
     });
 
     //Append to data
     clean_annotations["a" + annotation.id] = annotation;
 
     if(!page_load) {
-      unlayered_tts = jQuery('div.article tt:not(.a)');
-      jQuery('#annotation-content-' + annotation.id).css('display', 'inline-block');
+      unlayered_tts = $('div.article tt:not(.a)');
+      $('#annotation-content-' + annotation.id).css('display', 'inline-block');
     }
-    jQuery.updateAnnotationCount();
+    $.updateAnnotationCount();
   },
   removeUnlayeredControls: function(els) {
     var removed_border_start = 0;
-    jQuery(els.filter('.border_annotation_start')).each(function(i, el) {
-      var previous_id = jQuery(el).data('id') - 1;
-      var previous_tt = jQuery('tt#t' + previous_id);
-      removed_border_start = jQuery('.unlayered-control-end.unlayered-position-' + previous_id).data('id');
-      jQuery('.unlayered-control-end.unlayered-position-' + previous_id).remove();
+    $(els.filter('.border_annotation_start')).each(function(i, el) {
+      var previous_id = $(el).data('id') - 1;
+      var previous_tt = $('tt#t' + previous_id);
+      removed_border_start = $('.unlayered-control-end.unlayered-position-' + previous_id).data('id');
+      $('.unlayered-control-end.unlayered-position-' + previous_id).remove();
     }); 
-    jQuery(els.filter('.border_annotation_end')).each(function(i, el) {
-      var next_id = jQuery(el).data('id') + 1;
-      var next_tt = jQuery('tt#t' + next_id);
-      jQuery('.unlayered-control-start.unlayered-control-' + next_id).remove();
-      jQuery('#unlayered-ellipsis-' + next_id).remove();
+    $(els.filter('.border_annotation_end')).each(function(i, el) {
+      var next_id = $(el).data('id') + 1;
+      var next_tt = $('tt#t' + next_id);
+      $('.unlayered-control-start.unlayered-control-' + next_id).remove();
+      $('#unlayered-ellipsis-' + next_id).remove();
       update_unlayered_end = next_id;
     });
     if(removed_border_start != 0 && update_unlayered_end != 0) {
-      jQuery('.unlayered-control-' + update_unlayered_end)
+      $('.unlayered-control-' + update_unlayered_end)
         .removeClass('unlayered-control-' + update_unlayered_end)
         .addClass('unlayered-control-' + removed_border_start)
         .data('id', removed_border_start);
     }
   },
   addUnlayeredControls: function(els) {
-    jQuery(els.filter('.border_annotation_start')).each(function(i, el) {
-      var previous_id = jQuery(el).data('id') - 1;
-      var previous_tt = jQuery('tt#t' + previous_id);
+    $(els.filter('.border_annotation_start')).each(function(i, el) {
+      var previous_id = $(el).data('id') - 1;
+      var previous_tt = $('tt#t' + previous_id);
       if(previous_tt.size() && !previous_tt.hasClass('a') && !previous_tt.next().is('.unlayered-control-end')) {
         var slice_pos = previous_tt.data('id');
         var last_annotation = all_tts.slice(0, slice_pos).filter('.a:last');
@@ -976,14 +976,14 @@ jQuery.extend({
         }
         var data = { "unlayered_end_id" : unlayered_end_id, "position" : previous_id };
         if(previous_tt.parent().hasClass('footnote') && previous_tt.parent().parent().is('sup')) {
-          jQuery(jQuery.mustache(unlayered_end_template, data)).insertAfter(previous_tt.parent().parent());
+          $($.mustache(unlayered_end_template, data)).insertAfter(previous_tt.parent().parent());
         } else if(previous_tt.parent().hasClass('footnote')) {
-          jQuery(jQuery.mustache(unlayered_end_template, data)).insertAfter(previous_tt.parent());
+          $($.mustache(unlayered_end_template, data)).insertAfter(previous_tt.parent());
         } else {
-          jQuery(jQuery.mustache(unlayered_end_template, data)).insertAfter(previous_tt);
+          $($.mustache(unlayered_end_template, data)).insertAfter(previous_tt);
         }
-        if(jQuery('.unlayered-control-end.unlayered-control-' + unlayered_end_id).size() == 2) {
-          var last = jQuery('.unlayered-control-end.unlayered-control-' + unlayered_end_id + ':last');
+        if($('.unlayered-control-end.unlayered-control-' + unlayered_end_id).size() == 2) {
+          var last = $('.unlayered-control-end.unlayered-control-' + unlayered_end_id + ':last');
           var renumber_tt_id = last.data('position') - 1;
           var renumber_last_annotation = all_tts.slice(0, renumber_tt_id).filter('.a:last');
           var new_unlayered_end_id = renumber_last_annotation.data('id') + 1;
@@ -993,17 +993,17 @@ jQuery.extend({
             .data('id', new_unlayered_end_id);
         }
       }
-      if(previous_id == 0 && jQuery('.unlayered-control-end.unlayered-control-1').size()) {
+      if(previous_id == 0 && $('.unlayered-control-end.unlayered-control-1').size()) {
         var next_id = els.filter('.border_annotation_end').data('id') + 1;
-        jQuery('.unlayered-control-end.unlayered-control-1').removeClass('unlayered-control-1').addClass('unlayered-control-' + next_id).data('id', next_id);
+        $('.unlayered-control-end.unlayered-control-1').removeClass('unlayered-control-1').addClass('unlayered-control-' + next_id).data('id', next_id);
       }
     });
-    jQuery(els.filter('.border_annotation_end')).each(function(i, el) {
-      var next_id = jQuery(el).data('id') + 1;
-      var next_tt = jQuery('tt#t' + next_id);
+    $(els.filter('.border_annotation_end')).each(function(i, el) {
+      var next_id = $(el).data('id') + 1;
+      var next_tt = $('tt#t' + next_id);
       if(!next_tt.hasClass('a') && !next_tt.prev().is('.unlayered-ellipsis')) {
         var data = { "unlayered_start_id" : next_id };
-        var new_node = jQuery(jQuery.mustache(unlayered_start_template, data));
+        var new_node = $($.mustache(unlayered_start_template, data));
         if(next_tt.parent().hasClass('footnote') && next_tt.parent().parent().is('sup')) {
           new_node.insertBefore(next_tt.parent().parent());
         } else if(next_tt.parent().hasClass('footnote')) {
@@ -1016,9 +1016,9 @@ jQuery.extend({
   },
   markupCollageLink: function(collage_link) {
     var nodes = new Array();
-    var previous_element = jQuery('tt#' + collage_link.link_text_start).prev();
-    var current_node = jQuery('tt#' + collage_link.link_text_start);
-    var link_node = jQuery('<a href="/collages/' + collage_link.linked_collage_id + '"></a>');
+    var previous_element = $('tt#' + collage_link.link_text_start).prev();
+    var current_node = $('tt#' + collage_link.link_text_start);
+    var link_node = $('<a href="/collages/' + collage_link.linked_collage_id + '"></a>');
     var i = 0;
     //all_tts.size() is used to prevent infinite loop here
     while(current_node.attr('id') != collage_link.link_text_end && i < all_tts.size()) {
@@ -1027,7 +1027,7 @@ jQuery.extend({
       i++;
     }
     nodes.push(current_node); //Last element
-    jQuery.each(nodes, function(i, el) {
+    $.each(nodes, function(i, el) {
       el.detach;
       link_node.append(el);
     });
@@ -1042,130 +1042,130 @@ jQuery.extend({
   },
   submitAnnotation: function(){
     var values = new Array();
-    jQuery(".layer_check input").each(function(i, el) {
-      if(jQuery(el).attr('checked')) {
-        values.push(jQuery(el).data('value'));
+    $(".layer_check input").each(function(i, el) {
+      if($(el).attr('checked')) {
+        values.push($(el).data('value'));
       }
     });
-    jQuery('#annotation_layer_list').val(jQuery('#new_layers input').val() + ',' + values.join(','));
+    $('#annotation_layer_list').val($('#new_layers input').val() + ',' + values.join(','));
 
-    jQuery('form.annotation').ajaxSubmit({
+    $('form.annotation').ajaxSubmit({
       error: function(xhr){
-        jQuery.hideGlobalSpinnerNode();
-        jQuery('#new-annotation-error').show().append(xhr.responseText);
+        $.hideGlobalSpinnerNode();
+        $('#new-annotation-error').show().append(xhr.responseText);
       },
       beforeSend: function(){
-        jQuery.cookie('scroll_pos', annotation_position);
-        jQuery.showGlobalSpinnerNode();
-        jQuery('div.ajax-error').html('').hide();
-        jQuery('#new-annotation-error').html('').hide();
+        $.cookie('scroll_pos', annotation_position);
+        $.showGlobalSpinnerNode();
+        $('div.ajax-error').html('').hide();
+        $('#new-annotation-error').html('').hide();
       },
       success: function(response){
-        jQuery.hideGlobalSpinnerNode();
-        var annotation = jQuery.parseJSON(response.annotation);
-        var color_map = jQuery.parseJSON(response.color_map);
-        jQuery('#edit_item div.dynamic').html('').hide();
+        $.hideGlobalSpinnerNode();
+        var annotation = $.parseJSON(response.annotation);
+        var color_map = $.parseJSON(response.color_map);
+        $('#edit_item div.dynamic').html('').hide();
         if(response.type == "update") {
-          jQuery.editAnnotationMarkup(annotation.annotation, color_map);
+          $.editAnnotationMarkup(annotation.annotation, color_map);
         } else {
-          jQuery.markupAnnotation(annotation.annotation, color_map, false);
+          $.markupAnnotation(annotation.annotation, color_map, false);
         }
-        jQuery('#edit_item').append(jQuery('<div>').attr('id', 'status_message').html('Collage Edited'));
+        $('#edit_item').append($('<div>').attr('id', 'status_message').html('Collage Edited'));
       }
     });
   },
 
   toggleAnnotation: function(id) {
-    if(jQuery('#annotation-content-' + id).css('display') == 'inline-block') {
-      jQuery('#annotation-content-' + id).css('display', 'none');
+    if($('#annotation-content-' + id).css('display') == 'inline-block') {
+      $('#annotation-content-' + id).css('display', 'none');
     } else {
-      jQuery('#annotation-content-' + id).css('display', 'inline-block');
+      $('#annotation-content-' + id).css('display', 'inline-block');
     }
   },
 
   annotationButton: function(annotationId){
-    var collageId = jQuery.getItemId();
-    if(jQuery('#annotation-details-' + annotationId).length == 0){
-      jQuery.ajax({
+    var collageId = $.getItemId();
+    if($('#annotation-details-' + annotationId).length == 0){
+      $.ajax({
         type: 'GET',
         cache: false,
-        url: jQuery.rootPath() + 'annotations/' + annotationId,
+        url: $.rootPath() + 'annotations/' + annotationId,
         beforeSend: function(){
-          jQuery.showGlobalSpinnerNode();
-          jQuery('div.ajax-error').html('').hide();
+          $.showGlobalSpinnerNode();
+          $('div.ajax-error').html('').hide();
         },
         error: function(xhr){
-          jQuery.hideGlobalSpinnerNode();
-          jQuery('div.ajax-error').show().append(xhr.responseText);
+          $.hideGlobalSpinnerNode();
+          $('div.ajax-error').show().append(xhr.responseText);
         },
         success: function(html){
-          jQuery('#edit_item #status_message').remove();
-          jQuery.hideGlobalSpinnerNode();
-          jQuery('#annotation_edit .dynamic').css('padding', '2px 0px 0px 0px').html(html).show();
+          $('#edit_item #status_message').remove();
+          $.hideGlobalSpinnerNode();
+          $('#annotation_edit .dynamic').css('padding', '2px 0px 0px 0px').html(html).show();
 
           if(access_results.can_edit_annotations) {
-            jQuery('#edit_item #annotation_edit .tabs a').show();
+            $('#edit_item #annotation_edit .tabs a').show();
           }
         }
       });
     } else {
-      jQuery('#annotation-details-' + annotationId).dialog('open');
+      $('#annotation-details-' + annotationId).dialog('open');
     }
   },
   observeSelectors: function() {
-    all_tts = jQuery('div.article tt');
+    all_tts = $('div.article tt');
     var data = { "unlayered_start_id" : 1, "unlayered_end_id" : 1 };
   },
   observeStatsListener: function() {
-    jQuery('#collage-stats').click(function() {
-      jQuery(this).toggleClass("active");
-      if(jQuery('#collage-stats-popup').height() < 400) {
-        jQuery('#collage-stats-popup').css('overflow', 'hidden');
+    $('#collage-stats').click(function() {
+      $(this).toggleClass("active");
+      if($('#collage-stats-popup').height() < 400) {
+        $('#collage-stats-popup').css('overflow', 'hidden');
       } else {
-        jQuery('#collage-stats-popup').css('height', 400);
+        $('#collage-stats-popup').css('height', 400);
       }
-      jQuery('#collage-stats-popup').slideToggle('fast');
+      $('#collage-stats-popup').slideToggle('fast');
       return false;
     });
   },
   observeAnnotationListeners: function(){
-    jQuery('.unlayered-ellipsis').live('click', function(e) {
+    $('.unlayered-ellipsis').live('click', function(e) {
       e.preventDefault();
-      var id = jQuery(this).data('id');
+      var id = $(this).data('id');
 
       var subset;
-      if(jQuery('.unlayered-control-' + id).size() == 2) {
-        subset = all_tts.slice((id - 1), jQuery('.unlayered-control-' + id + ':last').data('position'));
+      if($('.unlayered-control-' + id).size() == 2) {
+        subset = all_tts.slice((id - 1), $('.unlayered-control-' + id + ':last').data('position'));
       } else if(id == 1) {
-        subset = all_tts.slice(0, jQuery('.unlayered-control-1').data('position'));
+        subset = all_tts.slice(0, $('.unlayered-control-1').data('position'));
       } else {
         subset = all_tts.slice(id - 1);
       }
       subset.css('display', 'inline');
 
-      jQuery('.unlayered-control-' + id).css('display', 'inline-block');
-      jQuery(this).css('display', 'none');
-      jQuery.resetParentDisplay(subset);
-      jQuery.hideShowUnlayeredOptions();
+      $('.unlayered-control-' + id).css('display', 'inline-block');
+      $(this).css('display', 'none');
+      $.resetParentDisplay(subset);
+      $.hideShowUnlayeredOptions();
     });
-    jQuery('.annotation-ellipsis').live('click', function(e) {
+    $('.annotation-ellipsis').live('click', function(e) {
       e.preventDefault();
-      var id = jQuery(this).data('id');
-      jQuery('#annotation-control-' + id + ',#annotation-asterisk-' + id).css('display', 'inline-block');
-      jQuery(this).css('display', 'none');
-      jQuery('.layered-control-' + id).css('display', 'inline-block');
-      var subset = jQuery('div.article tt.a' + id);
+      var id = $(this).data('id');
+      $('#annotation-control-' + id + ',#annotation-asterisk-' + id).css('display', 'inline-block');
+      $(this).css('display', 'none');
+      $('.layered-control-' + id).css('display', 'inline-block');
+      var subset = $('div.article tt.a' + id);
       subset.css('display', 'inline');
-      jQuery.resetParentDisplay(subset);
+      $.resetParentDisplay(subset);
     });
-    jQuery('.unlayered-control').live('click', function(e) {
+    $('.unlayered-control').live('click', function(e) {
       e.preventDefault();
-      var current = jQuery(this);
+      var current = $(this);
       var id = current.data('id');
 
       var subset;
-      if(jQuery('.unlayered-control-' + id).size() == 2) {
-        subset = all_tts.slice((id - 1), jQuery('.unlayered-control-' + id + ':last').data('position'));
+      if($('.unlayered-control-' + id).size() == 2) {
+        subset = all_tts.slice((id - 1), $('.unlayered-control-' + id + ':last').data('position'));
       } else if(id == 1) {
         subset = all_tts.slice(0, current.data('position'));
       } else {
@@ -1173,76 +1173,76 @@ jQuery.extend({
       }
       subset.css('display', 'none');
 
-      jQuery('.unlayered-control-' + id).css('display', 'none');
-      jQuery('#unlayered-ellipsis-' + id).css('display', 'inline-block');
-      jQuery.resetParentDisplay(subset);
-      jQuery.hideShowUnlayeredOptions();
+      $('.unlayered-control-' + id).css('display', 'none');
+      $('#unlayered-ellipsis-' + id).css('display', 'inline-block');
+      $.resetParentDisplay(subset);
+      $.hideShowUnlayeredOptions();
     });
-    jQuery('.layered-control').live('click', function(e) {
+    $('.layered-control').live('click', function(e) {
       e.preventDefault();
-      var id = jQuery(this).data('id');
-      jQuery('tt.a' + id + ',.layered-control-' + id).css('display', 'none');
-      jQuery('#annotation-ellipsis-' + id).css('display', 'inline-block');
-      jQuery.resetParentDisplay(jQuery('tt.a' + id));
+      var id = $(this).data('id');
+      $('tt.a' + id + ',.layered-control-' + id).css('display', 'none');
+      $('#annotation-ellipsis-' + id).css('display', 'inline-block');
+      $.resetParentDisplay($('tt.a' + id));
     });
   },
   toggleEditMode: function(highlight) {
     if(highlight) {
-      jQuery('div.article').addClass('edit_mode');
+      $('div.article').addClass('edit_mode');
     } else {
-      jQuery('div.article').removeClass('edit_mode');
+      $('div.article').removeClass('edit_mode');
     }
   },
   observeWords: function(){
-    jQuery('tt').click(function(e) {
-      if(jQuery('#edit_toggle').length && jQuery('#edit_toggle').hasClass('edit_mode')) {
+    $('tt').click(function(e) {
+      if($('#edit_toggle').length && $('#edit_toggle').hasClass('edit_mode')) {
         e.preventDefault();
-        var el = jQuery(this);
-        annotation_position = jQuery(window).scrollTop();
+        var el = $(this);
+        annotation_position = $(window).scrollTop();
         if(new_annotation_start != '') {
           new_annotation_end = el.attr('id');
 
-          if(jQuery('tt#' + new_annotation_start).data('id') > jQuery('tt#' + new_annotation_end).data('id')) {
+          if($('tt#' + new_annotation_start).data('id') > $('tt#' + new_annotation_end).data('id')) {
             var tmp = new_annotation_start;
             new_annotation_start = new_annotation_end;
             new_annotation_end = tmp;
           }
 
           /* Important calculation to not allow overlapping collage links */
-          var pos_start = jQuery('tt#' + new_annotation_start).data('id');
-          var pos_end = jQuery('tt#' + new_annotation_end).data('id');
+          var pos_start = $('tt#' + new_annotation_start).data('id');
+          var pos_end = $('tt#' + new_annotation_end).data('id');
           var els = all_tts.slice(pos_start - 1, pos_end);
           var linking = false;
           var text = '';
-          jQuery.each(els, function(i, el) {
-            var current = jQuery(el);
+          $.each(els, function(i, el) {
+            var current = $(el);
             //text += current.html();
             if(current.parent().is('a')) {
               linking = true;
             }
           });
-          var collageId = jQuery.getItemId();
+          var collageId = $.getItemId();
           text += '...';
 
-          jQuery.openAnnotationForm('annotations/new', {
+          $.openAnnotationForm('annotations/new', {
             collage_id: collageId,
             annotation_start: new_annotation_start,
             annotation_end: new_annotation_end,
             text: text
           });
           if(linking) {
-            jQuery('#abstract_type_annotation').click();
-            jQuery('#collage_linking').show();
-            jQuery('#collage_non_linking').hide(); 
-            jQuery('#linking_error').show();
-            jQuery('#link_edit #search_wrapper_outer').hide();
-            jQuery('#link_edit .dynamic').hide().html('');
+            $('#abstract_type_annotation').click();
+            $('#collage_linking').show();
+            $('#collage_non_linking').hide(); 
+            $('#linking_error').show();
+            $('#link_edit #search_wrapper_outer').hide();
+            $('#link_edit .dynamic').hide().html('');
           } else {
-            jQuery('#linking_error').hide();
-            jQuery('#link_edit #search_wrapper_outer').show();
-            jQuery('#collage_linking').hide(); 
-            jQuery('#collage_non_linking').show();
-            jQuery.openCollageLinkForm('collage_links/embedded_pager', {
+            $('#linking_error').hide();
+            $('#link_edit #search_wrapper_outer').show();
+            $('#collage_linking').hide(); 
+            $('#collage_non_linking').show();
+            $.openCollageLinkForm('collage_links/embedded_pager', {
               host_collage: collageId,
               link_start: new_annotation_start,
               link_end: new_annotation_end,
@@ -1250,15 +1250,15 @@ jQuery.extend({
             });
           }
 
-          var el = jQuery('#' + jQuery('#cancel-annotation').data('id'));
+          var el = $('#' + $('#cancel-annotation').data('id'));
           el.find('a.annotation_tip').tipsy("hide");
           el.find('a.annotation_tip').remove();
           new_annotation_start = '';
           new_annotation_end = '';
         } else {
-          var el = jQuery(this);
+          var el = $(this);
           el.css('position', 'relative');
-          var annotation_tip = jQuery('<a>')
+          var annotation_tip = $('<a>')
             .addClass('annotation_tip')
             .tipsy({ trigger: 'manual', gravity: 's', opacity: 1.0, html: true, fallback: 'Your edit will start here. Please click another word to set the end point. <a href="#" data-id="' + el.attr('id') + '" id="cancel-annotation">cancel</a>' });
           el.prepend(annotation_tip);
@@ -1267,163 +1267,163 @@ jQuery.extend({
         }
       }
     });
-    //if(jQuery('#edit-show').length && jQuery('#edit-show').html() == 'READ') {
+    //if($('#edit-show').length && $('#edit-show').html() == 'READ') {
     //if(access_results.can_edit_annotations) {
-      //jQuery('.annotation-content').css('display', 'none');
+      //$('.annotation-content').css('display', 'none');
     //}
   },
   observeAnnotationEditListeners: function() {
-    jQuery('#edit_item .tabs a:not(.current)').live('click', function(e) {
+    $('#edit_item .tabs a:not(.current)').live('click', function(e) {
       e.preventDefault();
-      var tabs_table = jQuery(this).parentsUntil('table').parent().first();
+      var tabs_table = $(this).parentsUntil('table').parent().first();
       tabs_table.find('.current').removeClass('current');
-      jQuery(this).addClass('current');
+      $(this).addClass('current');
       tabs_table.siblings('.tab_panel').hide();
-      jQuery('#edit_item div.' + jQuery(this).attr('id')).show();
+      $('#edit_item div.' + $(this).attr('id')).show();
     });
-    jQuery('#edit_item .tabs a.current').live('click', function(e) {
+    $('#edit_item .tabs a.current').live('click', function(e) {
       e.preventDefault();
     });
-    jQuery('#annotation_submit').live('click', function(e) {
+    $('#annotation_submit').live('click', function(e) {
       e.preventDefault();
-      jQuery.submitAnnotation();
+      $.submitAnnotation();
     });
-    jQuery('#cancel_new_annotation').live('click', function() {
-      jQuery('#edit_item .dynamic').hide().html('');
-      jQuery('#link_edit #search_wrapper_outer').hide();
+    $('#cancel_new_annotation').live('click', function() {
+      $('#edit_item .dynamic').hide().html('');
+      $('#link_edit #search_wrapper_outer').hide();
     });
-    jQuery('#delete_annotation').live('click', function(e) {
+    $('#delete_annotation').live('click', function(e) {
       e.preventDefault();
-      var annotationId = jQuery(this).data('id');
+      var annotationId = $(this).data('id');
       if(confirm('Are you sure?')){
-        jQuery.ajax({
+        $.ajax({
           cache: false,
           type: 'POST',
           data: {
             '_method': 'delete'
           },
-          url: jQuery.rootPath() + 'annotations/destroy/' + annotationId,
+          url: $.rootPath() + 'annotations/destroy/' + annotationId,
           beforeSend: function(){
-            jQuery.showGlobalSpinnerNode();
+            $.showGlobalSpinnerNode();
           },
           error: function(xhr){
-            jQuery.hideGlobalSpinnerNode();
+            $.hideGlobalSpinnerNode();
           },
           success: function(response){
-            jQuery.deleteAnnotationMarkup(clean_annotations["a" + annotationId]);
-            jQuery('#edit_item #annotation_edit .dynamic').hide().html('');
-            jQuery('#edit_item').append(jQuery('<div>').attr('id', 'status_message').html('Annotation Deleted'));
-            jQuery.hideGlobalSpinnerNode();
+            $.deleteAnnotationMarkup(clean_annotations["a" + annotationId]);
+            $('#edit_item #annotation_edit .dynamic').hide().html('');
+            $('#edit_item').append($('<div>').attr('id', 'status_message').html('Annotation Deleted'));
+            $.hideGlobalSpinnerNode();
           }
         });
       }
     });
-    jQuery('#edit_annotation').live('click', function(e) {
+    $('#edit_annotation').live('click', function(e) {
       e.preventDefault();
-      jQuery.ajax({
+      $.ajax({
         type: 'GET',
         cache: false,
-        url: jQuery.rootPath() + 'annotations/edit/' + jQuery(this).data('id'),
+        url: $.rootPath() + 'annotations/edit/' + $(this).data('id'),
         beforeSend: function(){
-          jQuery.showGlobalSpinnerNode();
-          //jQuery('#new-annotation-error').html('').hide();
+          $.showGlobalSpinnerNode();
+          //$('#new-annotation-error').html('').hide();
         },
         error: function(xhr){
-          jQuery.hideGlobalSpinnerNode();
-          //jQuery('#new-annotation-error').show().append(xhr.responseText);
+          $.hideGlobalSpinnerNode();
+          //$('#new-annotation-error').show().append(xhr.responseText);
         },
         success: function(html){
-          jQuery.hideGlobalSpinnerNode();
-          jQuery('<div>').attr('id', 'annotation_edit').html(html).appendTo(jQuery('#edit_item'));
-          var filtered = jQuery('#annotation_annotation').val().replace(/&quot;/g, '"');
-          jQuery('#annotation_annotation').val(filtered);
-          jQuery("#annotation_annotation").markItUp(h2oTextileSettings);
+          $.hideGlobalSpinnerNode();
+          $('<div>').attr('id', 'annotation_edit').html(html).appendTo($('#edit_item'));
+          var filtered = $('#annotation_annotation').val().replace(/&quot;/g, '"');
+          $('#annotation_annotation').val(filtered);
+          $("#annotation_annotation").markItUp(h2oTextileSettings);
         }
       });
     });
 
-    jQuery('.control-divider').live('click', function(e) {
+    $('.control-divider').live('click', function(e) {
       e.preventDefault();
-      if(jQuery('#edit_toggle').length && jQuery('#edit_toggle').hasClass('edit_mode')) {
-        jQuery.annotationButton(jQuery(this).data('id'));
+      if($('#edit_toggle').length && $('#edit_toggle').hasClass('edit_mode')) {
+        $.annotationButton($(this).data('id'));
       }
     });
-    jQuery('.annotation-asterisk').live('click', function(e) {
+    $('.annotation-asterisk').live('click', function(e) {
       e.preventDefault();
-      var annotation_id = jQuery(this).data('id');
-      jQuery.toggleAnnotation(annotation_id);
-      jQuery.hideShowAnnotationOptions(false);
-      if(jQuery('#edit_toggle').length && jQuery('#edit_toggle').hasClass('edit_mode')) {
-        if(!jQuery('#delete_annotation').length || jQuery('#delete_annotation').data('id') != annotation_id) {
-          jQuery.annotationButton(annotation_id);
+      var annotation_id = $(this).data('id');
+      $.toggleAnnotation(annotation_id);
+      $.hideShowAnnotationOptions(false);
+      if($('#edit_toggle').length && $('#edit_toggle').hasClass('edit_mode')) {
+        if(!$('#delete_annotation').length || $('#delete_annotation').data('id') != annotation_id) {
+          $.annotationButton(annotation_id);
         }
       }
     });
   },
   openAnnotationForm: function(url_path, data){
-    jQuery.ajax({
+    $.ajax({
         type: 'GET',
-        url: jQuery.rootPath() + url_path,
+        url: $.rootPath() + url_path,
         data: data, 
         cache: false,
         beforeSend: function(){
-          jQuery.showGlobalSpinnerNode();
-          jQuery('div.ajax-error').html('').hide();
+          $.showGlobalSpinnerNode();
+          $('div.ajax-error').html('').hide();
         },
         success: function(html){
-          jQuery.hideGlobalSpinnerNode();
-          jQuery('#edit_item #status_message').remove();
-          jQuery('#annotation_edit .dynamic').css('padding', '10px').html(html).show();
-          //jQuery('<div>').attr('id', 'annotation_edit').addClass('tab_panel new_annotation').html(html).appendTo(jQuery('#edit_item'));
+          $.hideGlobalSpinnerNode();
+          $('#edit_item #status_message').remove();
+          $('#annotation_edit .dynamic').css('padding', '10px').html(html).show();
+          //$('<div>').attr('id', 'annotation_edit').addClass('tab_panel new_annotation').html(html).appendTo($('#edit_item'));
         },
         error: function(xhr){
-          jQuery.hideGlobalSpinnerNode();
-          jQuery('div.ajax-error').show().append(xhr.responseText);
+          $.hideGlobalSpinnerNode();
+          $('div.ajax-error').show().append(xhr.responseText);
         }
       });
   }, //end anntotation dialog
 
   initPlaylistItemAddButton: function(){
-    jQuery('.add-collage-button').live('click', function(e) {
+    $('.add-collage-button').live('click', function(e) {
       e.preventDefault();
-      var link_start = jQuery('input[name=link_start]').val();
-      var link_end = jQuery('input[name=link_end]').val();
-      var host_collage = jQuery('input[name=host_collage]').val();
-      var itemId = jQuery(this).attr('id').split('-')[1];
-      jQuery.submitCollageLink(itemId, link_start, link_end, host_collage);
+      var link_start = $('input[name=link_start]').val();
+      var link_end = $('input[name=link_end]').val();
+      var host_collage = $('input[name=host_collage]').val();
+      var itemId = $(this).attr('id').split('-')[1];
+      $.submitCollageLink(itemId, link_start, link_end, host_collage);
     });
   },
 
   initKeywordSearch: function(){
-    jQuery('#link_search').live('click', function(e) {
+    $('#link_search').live('click', function(e) {
       e.preventDefault();
-      jQuery.ajax({
+      $.ajax({
         method: 'GET',
-        url: jQuery.rootPath() + 'collage_links/embedded_pager',
+        url: $.rootPath() + 'collage_links/embedded_pager',
         beforeSend: function(){
-           jQuery.showGlobalSpinnerNode();
+           $.showGlobalSpinnerNode();
         },
         data: {
-            keywords: jQuery('#collage-keyword-search').val(),
-            link_start: jQuery('#edit_item input[name=link_start]').val(),
-            link_end: jQuery('#edit_item input[name=link_end]').val(),
-            host_collage: jQuery('#edit_item input[name=host_collage]').val(),
-            text: jQuery('#edit_item input[name=text]').val()
+            keywords: $('#collage-keyword-search').val(),
+            link_start: $('#edit_item input[name=link_start]').val(),
+            link_end: $('#edit_item input[name=link_end]').val(),
+            host_collage: $('#edit_item input[name=host_collage]').val(),
+            text: $('#edit_item input[name=text]').val()
         },
         dataType: 'html',
         success: function(html){
-          jQuery.hideGlobalSpinnerNode();
-          jQuery('#link_edit .dynamic').html(html);
+          $.hideGlobalSpinnerNode();
+          $('#link_edit .dynamic').html(html);
         },
         error: function(xhr){
-          jQuery.hideGlobalSpinnerNode();
+          $.hideGlobalSpinnerNode();
         }
       });
     });
   },
   
   submitCollageLink: function(linked_collage, link_start, link_end, host_collage){
-    jQuery.ajax({
+    $.ajax({
       type: 'POST',
       cache: false,
       data: {collage_link: {
@@ -1433,94 +1433,94 @@ jQuery.extend({
         link_text_end: link_end
         }
       },
-      url: jQuery.rootPath() + 'collage_links/create',
+      url: $.rootPath() + 'collage_links/create',
       success: function(results){
-        jQuery.hideGlobalSpinnerNode();
-        jQuery('#link_edit .dynamic,#annotation_edit .dynamic').hide().html('');
-        jQuery('#link_edit #search_wrapper_outer').hide();
-        jQuery('#edit_item').append(jQuery('<div>').attr('id', 'status_message').html('Link Created'));
-        jQuery.markupCollageLink(results.collage_link);
+        $.hideGlobalSpinnerNode();
+        $('#link_edit .dynamic,#annotation_edit .dynamic').hide().html('');
+        $('#link_edit #search_wrapper_outer').hide();
+        $('#edit_item').append($('<div>').attr('id', 'status_message').html('Link Created'));
+        $.markupCollageLink(results.collage_link);
       }
     });
   },
 
   openCollageLinkForm: function(url_path, data){
-    jQuery.ajax({
+    $.ajax({
       type: 'GET',
-      url: jQuery.rootPath() + url_path,
+      url: $.rootPath() + url_path,
       cache: false,
       beforeSend: function(){
-         jQuery.showGlobalSpinnerNode();
+         $.showGlobalSpinnerNode();
       },
       data: data,
       dataType: 'html',
       success: function(html){
-        jQuery.hideGlobalSpinnerNode();
-        jQuery('#link_edit .dynamic').html(html).show();
+        $.hideGlobalSpinnerNode();
+        $('#link_edit .dynamic').html(html).show();
       }
     });
   }
 });
 
-jQuery(document).ready(function(){
-  if(jQuery('.singleitem').length > 0){
-    jQuery.showGlobalSpinnerNode();
-    jQuery.observeSelectors();
+$(document).ready(function(){
+  if($('.singleitem').length > 0){
+    $.showGlobalSpinnerNode();
+    $.observeSelectors();
 
-    jQuery('.toolbar, #buttons').css('visibility', 'visible');
-    jQuery('#cancel-annotation').live('click', function(e){
+    $('.toolbar, #buttons').css('visibility', 'visible');
+    $('#cancel-annotation').live('click', function(e){
       e.preventDefault();
-      var el = jQuery('#' + jQuery(this).data('id'));
+      var el = $('#' + $(this).data('id'));
       el.find('a.annotation_tip').tipsy("hide");
       el.find('a.annotation_tip').remove();
       new_annotation_start = '';
       new_annotation_end = '';
     });
 
-    jQuery.each(annotations, function(i, el) {
-      clean_annotations[i] = jQuery.parseJSON(el).annotation;
-      jQuery.markupAnnotation(clean_annotations[i], layer_color_map, true);
+    $.each(annotations, function(i, el) {
+      clean_annotations[i] = $.parseJSON(el).annotation;
+      $.markupAnnotation(clean_annotations[i], layer_color_map, true);
     });
 
-    unlayered_tts = jQuery('div.article tt:not(.a)');
-    if(!jQuery('tt#t1').is('.a')) {
-      jQuery('<a class="unlayered-ellipsis" id="unlayered-ellipsis-1" data-id="1" href="#">[...]</a>').insertBefore(jQuery('tt#t1'));
+    unlayered_tts = $('div.article tt:not(.a)');
+    if(!$('tt#t1').is('.a')) {
+      $('<a class="unlayered-ellipsis" id="unlayered-ellipsis-1" data-id="1" href="#">[...]</a>').insertBefore($('tt#t1'));
     }
 
-    jQuery.each(collage_links, function(i, el) {
+    $.each(collage_links, function(i, el) {
       clean_collage_links[i] = el.collage_link;
-      jQuery.markupCollageLink(clean_collage_links[i]);
+      $.markupCollageLink(clean_collage_links[i]);
     });
 
-    jQuery.observeAnnotationListeners();
-    jQuery.observeToolListeners();
-    jQuery.observePrintListeners();
-    jQuery.observeLayerColorMapping();
-    jQuery.observeHeatmap();
-    jQuery.observeAnnotationEditListeners();
+    $.observeAnnotationListeners();
+    $.observeToolListeners();
+    $.observePrintListeners();
+    $.observeLayerColorMapping();
+    $.observeHeatmap();
+    $.observeAnnotationEditListeners();
   
-    jQuery.observeStatsListener();
+    $.observeStatsListener();
 
     /* Collage Search */
-    jQuery.initKeywordSearch();
-    jQuery.initPlaylistItemAddButton();
+    $.initKeywordSearch();
+    $.initPlaylistItemAddButton();
 
-    jQuery.observeFootnoteLinks();
-    jQuery.hideGlobalSpinnerNode();
-    jQuery.observeViewerToggleEdit();
-    jQuery.observeStatsHighlights();
+    $.observeFootnoteLinks();
+    $.hideGlobalSpinnerNode();
+    $.observeViewerToggleEdit();
+    $.observeStatsHighlights();
           
-    jQuery.updateWordCount();
+    $.updateWordCount();
 
-    jQuery.slideToParagraph();
-    jQuery.observeDeleteInheritedAnnotations();
-    jQuery.observeUpgradeCollage();
+    $.slideToParagraph();
+    $.observeDeleteInheritedAnnotations();
+    $.observeUpgradeCollage();
 
     //Must be after onclicks initiated
-    if(jQuery.cookie('user_id') == null) {
+    if($.cookie('user_id') == null) {
       access_results = { 'can_edit_annotations' : false };
       last_data = original_data;
-      jQuery.loadState();
+      $.loadState();
     }
   }
 });
