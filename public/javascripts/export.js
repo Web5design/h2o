@@ -49,6 +49,12 @@ $.extend({
       set = set.filter(':not(:has(*:visible)):not(.paragraph-numbering)');
       set.remove();
     });
+    
+    var cannotations = eval("annotations_" + collage_id);
+    $.each(cannotations, function(i, ann) {
+      var annotation = $.parseJSON(ann).annotation;
+      $('<span>').addClass('annotation-content annotation-content-' + annotation.id).html(annotation.annotation).insertAfter($('.annotation-' + annotation.id + ':last'));
+    });
   }
 });
 
@@ -63,6 +69,15 @@ var export_functions = {
 	    className: "jsb", replaceInvisible: true
 	  }).change(function() {
 	    export_functions.setFontPrint();
+	  });
+	  $('#printannotations').val('no').selectbox({
+	    className: "jsb", replaceInvisible: true
+	  }).change(function() {
+      if($(this).val() == 'yes') {
+        $('.annotation-content').show();
+      } else {
+        $('.annotation-content').hide();
+      }
 	  });
 	
 	  $('#printtitle').selectbox({
@@ -388,7 +403,7 @@ var export_functions = {
           $('<span class="ellipsis">[...] </span>').insertBefore(elements.first());
           elements.hide();
         } else if(i.match(/#annotation-content/) && e == 'inline-block') {
-          $(i).css('display', 'block');
+          //do nothing now with annotator upgrade
         }
       });
 

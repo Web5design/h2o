@@ -93,6 +93,7 @@ background: url(/images/asterisk.jpg) 2px 1px no-repeat; text-indent: 10px; widt
   width: 150px;
   font-weight: normal;
 }
+#print-options #annotation_options,
 #print-options #highlight_options,
 #print-options #heatmap_options {
   display: inline-block;
