@@ -564,6 +564,9 @@ $.extend({
   },
   loadOuterClicks: function() {
     $('html').click(function(event) {
+      if($('#nonsupported_browser').size()) {
+        return;
+      }
       var dont_hide = $('.add-popup,#login-popup,.text-layers-popup,#font-popup,.ui-dialog,#create_nav,#quickbar_right').has(event.target).length > 0 ? true : false;
       if($(event.target).hasClass('dont_hide')) {
         dont_hide = true;

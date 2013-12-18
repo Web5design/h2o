@@ -142,6 +142,10 @@ $.extend({
     });
   },
   collage_afterload: function(results) {
+    if($.browser.msie && $.browser.version < 9.0) {
+      return;
+    }
+
     if(results.can_edit_annotations) {
       $.initiate_annotator(true);  
       $('.requires_edit').animate({ opacity: 1.0 });
@@ -619,28 +623,37 @@ $.extend({
 });
 
 $(document).ready(function(){
-  if($('.singleitem').length > 0){
-    $.showGlobalSpinnerNode();
-
-    $.each(collage_links, function(i, el) {
-      clean_collage_links[i] = el.collage_link;
-      $.markupCollageLink(clean_collage_links[i]);
-    });
-
-    $('.toolbar, #buttons').css('visibility', 'visible');
-    $.observeToolListeners();
-    $.observeLayerColorMapping();
-    $.observePrintListeners();
-    $.observeHeatmap();
-    $.observeDeleteInheritedAnnotations();
-    $.initKeywordSearch();
-    $.initPlaylistItemAddButton();
-
-    $.observeFootnoteLinks();
-    $.hideGlobalSpinnerNode();
-    $.observeStatsHighlights();
-    $.slideToParagraph();
+  if($.browser.msie && $.browser.version < 9.0) {
+    $('<p id="nonsupported_browser">Collage annotation functionality is not supported by your browser. Please upgrade to IE9 or greater.</p>').dialog({ 
+      title: "Non-Supported Browser"
+    }).dialog('open');
+    $('.ui-dialog-titlebar-close').remove();
+    $('body').css('overflow', 'hidden');
+    $('.main_wrapper').css({ opacity: 0.2 });
+    return;
   }
+
+return;
+  $.showGlobalSpinnerNode();
+
+  $.each(collage_links, function(i, el) {
+    clean_collage_links[i] = el.collage_link;
+    $.markupCollageLink(clean_collage_links[i]);
+  });
+
+  $('.toolbar, #buttons').css('visibility', 'visible');
+  $.observeToolListeners();
+  $.observeLayerColorMapping();
+  $.observePrintListeners();
+  $.observeHeatmap();
+  $.observeDeleteInheritedAnnotations();
+  $.initKeywordSearch();
+  $.initPlaylistItemAddButton();
+
+  $.observeFootnoteLinks();
+  $.hideGlobalSpinnerNode();
+  $.observeStatsHighlights();
+  $.slideToParagraph();
 });
 
 var layer_tools_visibility = '\
