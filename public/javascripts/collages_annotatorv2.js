@@ -99,7 +99,7 @@ $.extend({
     }
   },
   observeDeleteInheritedAnnotations: function () {
-    $('#delete_inherited_annotations').live('click', function(e) {
+    $('#delete_inherited_annotations').on('click', function(e) {
       e.preventDefault();
 
       $.ajax({
@@ -207,7 +207,7 @@ $.extend({
     return hexes;
   },
   observeLayerColorMapping: function() {
-    $('.hexes a').live('click', function() {
+    $(document).delegate('.hexes a', 'click', function() {
       if($(this).hasClass('inactive')) {
         return false;
       }
@@ -216,20 +216,20 @@ $.extend({
       $(this).addClass('active');
       return false;
     });
-    $('#add_new_layer').live('click', function() {
+    $(document).delegate('#add_new_layer', 'click', function() {
       var new_layer = $('<li class="annotator-item annotator-h2o_layer"><p>Enter Layer Name <input type="text" name="new_layer" /></p><p class="hex_input">Choose a Color<input type="hidden" name="new_layer_list[][hex]" /></p><a href="#" class="remove_layer">Cancel &raquo;</a></div>');
       var hexes = $.getHexes();
       hexes.insertBefore(new_layer.find('.remove_layer'));
       new_layer.insertBefore($('.annotator-h2o_layer_button'));
       return false;
     });
-    $('.remove_layer').live('click', function() {
+    $(document).delegate('.remove_layer', 'click', function() {
       $(this).parent().remove();
       return false;
     });
   },
   observeHeatmap: function() {
-    $('#heatmap_toggle:not(.inactive,.activated)').live('click', function(e) {
+    $(document).delegate('#heatmap_toggle:not(.inactive,.activated)', 'click', function(e) {
       e.preventDefault();
       $.showGlobalSpinnerNode();
       last_data = $.retrieveState();
@@ -251,7 +251,7 @@ $.extend({
       $('#heatmap_toggle').addClass('activated');
       $.hideGlobalSpinnerNode();
     });
-    $('#heatmap_toggle.activated').live('click', function(e) {
+    $(document).delegate('#heatmap_toggle.activated', 'click', function(e) {
       e.preventDefault();
       $.showGlobalSpinnerNode();
       var stored_annotations = st_annotator.dumpAnnotations();
@@ -297,7 +297,7 @@ $.extend({
     return x1 + x2;
   },
   observeToolListeners: function () {
-    $("#buttons a.btn-a:not(.btn-a-active)").live('click', function(e) {
+    $(document).delegate("#buttons a.btn-a:not(.btn-a-active)", 'click', function(e) {
       e.preventDefault();
       if($(this).hasClass('inactive')) {
         return;
@@ -307,19 +307,19 @@ $.extend({
       $('.text-layers-popup').css({ position: 'absolute', top: top_pos, left: left_pos, "z-index": 1 }).fadeIn(200);
       $(this).addClass("btn-a-active");
     });
-    $("#buttons a.btn-a-active").live('click', function(e) {
+    $(document).delegate("#buttons a.btn-a-active", 'click', function(e) {
       e.preventDefault();
       $('.text-layers-popup').fadeOut(200);
       $(this).removeClass("btn-a-active");
     });
-    $('#quickbar_tools:not(.active)').live('click', function(e) {
+    $(document).delegate('#quickbar_tools:not(.active)', 'click', function(e) {
       e.preventDefault();
       var top_pos = $(this).position().top + $(this).height() + 8;
       var left_pos = $(this).position().left - 198 + $(this).width();
       $('.text-layers-popup').css({ position: 'fixed', top: top_pos, left: left_pos, "z-index": 5 }).fadeIn(200);
       $(this).addClass('active');
     });
-    $('#quickbar_tools.active').live('click', function(e) {
+    $(document).delegate('#quickbar_tools.active', 'click', function(e) {
       e.preventDefault();
       $('.text-layers-popup').fadeOut(200);
       $(this).removeClass('active');
@@ -366,7 +366,7 @@ $.extend({
       $.hideGlobalSpinnerNode();
     });
 
-    $('#layers .hide_show').live('click', function(e) {
+    $(document).delegate('#layers .hide_show', 'click', function(e) {
       e.preventDefault();
       $.showGlobalSpinnerNode();
 
@@ -385,7 +385,7 @@ $.extend({
       $.hideGlobalSpinnerNode();
     });
 
-    $('#layers_highlights .link-o').live('click', function(e) {
+    $(document).delegate('#layers_highlights .link-o', 'click', function(e) {
       e.preventDefault();
       var layer = $(this).parent().data('name');
       var hex = $(this).parent().data('hex');
@@ -545,7 +545,7 @@ $.extend({
     parents.filter(':not(:has(.layered-control,.control-divider,.unlayered-ellipsis:visible,tt:visible))').addClass('no_visible_children');
   },
   initPlaylistItemAddButton: function(){
-    $('.add-collage-button').live('click', function(e) {
+    $(document).delegate('.add-collage-button', 'click', function(e) {
       e.preventDefault();
       var link_start = $('input[name=link_start]').val();
       var link_end = $('input[name=link_end]').val();
@@ -555,7 +555,7 @@ $.extend({
     });
   },
   initKeywordSearch: function(){
-    $('#link_search').live('click', function(e) {
+    $(document).delegate('#link_search', 'click', function(e) {
       e.preventDefault();
       $.ajax({
         method: 'GET',

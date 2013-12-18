@@ -634,7 +634,6 @@ H2O.prototype.beforeDestroyAnnotationMarkup = function(annotation) {
   };
 
   H2O.prototype.updateViewer = function(field, annotation) {
-  console.log('inside update viewer');
     if($('#print-options').size() > 0) {
       return;
     }
